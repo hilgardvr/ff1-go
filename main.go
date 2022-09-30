@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"hilgardvr/ff1-go/controllers"
 	"hilgardvr/ff1-go/repo"
 	"log"
@@ -15,8 +14,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	drivers := repo.GetDrivers()
-	fmt.Println(drivers)
+	log.Println("Starting server on port", port)
 	http.HandleFunc("/", controllers.HomeController)
+	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	log.Fatal(http.ListenAndServe(port, nil))
 }

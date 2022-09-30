@@ -1,10 +1,12 @@
 package drivers
 
+import "math"
+
 type Driver struct {
-	Id     int
-	Name   string
-	Points int
-	Price  float64
+	Id     int     `json:"id"`
+	Name   string  `json:"name"`
+	Points int     `json:"points"`
+	Price  float64 `json:"price`
 	// RoundBonus  int
 }
 
@@ -42,5 +44,6 @@ func calcPrice(driver Driver, totalPoints int) float64 {
 	}
 	driverPointsShare := float64(driver.Points) / float64(totalPoints)
 	price := (driverPointsShare*budget + basePrice) * adjustmentFactor
+	price = math.Round(price)
 	return price
 }

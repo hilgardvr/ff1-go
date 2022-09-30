@@ -1,13 +1,20 @@
 <html>
     <head>
         <title>FF1 Go</title>
+        <!-- <script src="//unpkg.com/alpinejs" defer></script> -->
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
     <body>
-        <ul>
-            {{ range . }}
-            <li>{{ .Name }}  {{ .Price }}</li>
-            {{ end }}
+        <div 
+            x-data="{all_drivers: []}"
+            x-init="all_drivers = await (await fetch('/api/all_drivers')).json()"
+        >
+            <ul>
+                <template x-for="driver in all_drivers">
+                    <li x-text="driver.name"></li>
+                </template>
+            </ul>
+        </div>
 
-        </ul>
     </body>
 </html>
