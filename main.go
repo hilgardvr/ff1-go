@@ -15,7 +15,9 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Starting server on port", port)
-	http.HandleFunc("/", controllers.HomeController)
+	// http.HandleFunc("/", controllers.HomeController)
+	http.HandleFunc("/", controllers.LoginContoller)
+	http.HandleFunc("/login", controllers.LoginCodeHandler)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	log.Fatal(http.ListenAndServe(port, nil))
 }

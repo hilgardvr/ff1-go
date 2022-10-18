@@ -6,8 +6,7 @@ type Driver struct {
 	Id     int     `json:"id"`
 	Name   string  `json:"name"`
 	Points int     `json:"points"`
-	Price  float64 `json:"price`
-	// RoundBonus  int
+	Price  float64 `json:"price"`
 }
 
 const budget float64 = 1000000.0
@@ -24,7 +23,6 @@ func AssignPrices(drivers []Driver) []Driver {
 			Name:   driver.Name,
 			Points: driver.Points,
 			Price:  price,
-			// RoundBonus: 0,
 		})
 	}
 	return createdDrivers
