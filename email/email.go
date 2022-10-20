@@ -12,12 +12,12 @@ var smtpHost = "smtp.gmail.com"
 var smtpPort = "587"
 
 
-func SendEmail(to string, msg string) {
+func SendEmail(to string, msg string) error {
 	auth := smtp.PlainAuth("", from, appPassword, smtpHost)
 	recipients := []string{to}
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, recipients, []byte(msg))
 	if err != nil {
 		log.Println("failed to send email:", err)
 	}
-	return
+	return err
 }

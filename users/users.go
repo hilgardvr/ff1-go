@@ -2,5 +2,5 @@ package users
 
 type User struct {
 	Email string
-	Cookie string
+	SessionId string
 }
