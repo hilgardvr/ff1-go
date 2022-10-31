@@ -18,7 +18,7 @@ func main() {
 	// http.HandleFunc("/", controllers.HomeController)
 	http.HandleFunc("/", controllers.HomeContoller)
 	http.HandleFunc("/login", controllers.LoginCodeHandler)
-	http.HandleFunc("/login-code", controllers.LoginCodeHandler)
+	// http.HandleFunc("/login-code", controllers.LoginCodeHandler)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
