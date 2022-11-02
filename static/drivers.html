@@ -8,6 +8,7 @@
             x-data="{all_drivers: [], selected_drivers: []}"
             x-init="all_drivers = await (await fetch('/api/all_drivers')).json()"
         >
+	    <h2>Drivers</h2>
             <ul>
                 <template x-for="driver in all_drivers">
                     <li x-text="driver.name"></li>

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"hilgardvr/ff1-go/users"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -13,35 +14,40 @@ import (
 )
 
 var sessions = []users.User{}
-var expiration = time.Now().Add(365 * 24 * time.Hour)
+var expiration = time.Now().Add(10 * time.Minute)
 var loginCodes = map[string]string{}
 
 func GetSession(r *http.Request) (users.User, error) {
-	// cookie, _ := r.Cookie(email)
-	// log.Println("Found cookie", cookie)
-	for _, cookie := range r.Cookies() {
-		for _, session := range sessions {
-			if session.SessionId == cookie.Value {
-				fmt.Println("session found:", session)
-				return session, nil
-			}
+	uuid, err := r.Cookie("session")
+	if err != nil {
+		log.Println(err)
+		return users.User{}, err
+	}
+	for _, session := range sessions {
+		if session.SessionId == uuid.Value  {
+			fmt.Println("Found cookie for ", session.Email)
+			return session, nil
 		}
 	}
-	return users.User{}, errors.New("Could not find an existing session")
+	err = errors.New("Could not find an existing session")
+	log.Println(err)
+	return users.User{}, err
 }
 
-func SetSession(email string, w http.ResponseWriter) error {
-	uuid := uuid.New()
-	cookie := http.Cookie{Name: email, Value: uuid.String(), Expires: expiration}
-	http.SetCookie(w, &cookie)
-	return nil
+func SetSessionCookie(email string, w http.ResponseWriter) {
+	uuid := uuid.New().String()
+	uuidCookie := http.Cookie{Name: "session", Value: uuid, Expires: expiration}
+	http.SetCookie(w, &uuidCookie)
+	sessions = append(sessions, users.User{Email: email, SessionId: uuid})
+	fmt.Printf("Cookie set for %s with value %s", email, uuid)
+	return
 }
 
 func SetLoginCode(email string) string {
 	if code, found := loginCodes[email]; found {
 		return code
 	}
-	code := rand.Int() % 100000
+	code := rand.Intn(100000)
 	str := strconv.Itoa(code)
 	padded := fmt.Sprintf("%05s", str)
 	loginCodes[email] = padded

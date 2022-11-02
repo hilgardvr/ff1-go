@@ -8,9 +8,9 @@
             <h4>Fantasy F1 Game</h4>
         </header>
         <body>
-            <form action="/login" method="post">
+            <form action="/login?email={{.Email}}" method="post">
                 <div>
-                    <label for="email">{{.}}</label>
+                    <label for="code">Enter code sent to {{.Email}}</label>
                     <input type="text" name="code" id="code" required>
                 </div>
                 <div>

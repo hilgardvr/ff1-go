@@ -4,27 +4,11 @@ import (
 	"fmt"
 	"hilgardvr/ff1-go/email"
 	"hilgardvr/ff1-go/session"
+	"hilgardvr/ff1-go/users"
 	"html/template"
 	"log"
 	"net/http"
 )
-
-//func HomeController(w http.ResponseWriter, r *http.Request) {
-//	// allDrivers := repo.GetDrivers()
-//	t, err := template.ParseFiles("./static/index.html")
-//	if err != nil {
-//		log.Fatalln("template parsing err:", err)
-//	}
-//	// json, err := json.Marshal(allDrivers)
-//	// if err != nil {
-//	// log.Fatalln("template parsing err:", err)
-//	// }
-//	// err = t.Execute(w, json)
-//	err = t.Execute(w, "")
-//	if err != nil {
-//		log.Fatalln("template executing err:", err)
-//	}
-//}
 
 func HomeContoller(w http.ResponseWriter, r *http.Request) {
 	session, err := session.GetSession(r)
@@ -52,25 +36,48 @@ func LoginCodeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalln("Could not parse form")
 	}
-	code := r.Form.Get("code")
-	fmt.Println(code)
 	emailAddress := r.Form.Get("email")
-	fmt.Println(emailAddress)
-	valid := ValidateUser(code, emailAddress) 
+	fmt.Println("email: ", emailAddress)
+	templ := "./static/login.html"
+	newCode := session.SetLoginCode(emailAddress)
+	email.SendEmail(emailAddress, "Your F1-Go login code", newCode)
+	t, err := template.ParseFiles(templ)
+	if err != nil {
+		log.Fatalln("template parsing err:", err)
+	}
+	user := users.User{Email: emailAddress, SessionId: ""}
+	err = t.Execute(w, user)
+	if err != nil {
+		log.Fatalln("template executing err:", err)
+	}
+}
+
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Fatalln("Could not parse form")
+	}
+	code := r.Form.Get("code")
+	fmt.Println("code: ", code)
+	emailAddress := r.URL.Query().Get("email")
+	fmt.Println("email: ", emailAddress)
+	valid := ValidateUser(code, emailAddress)
 	var templ string
-	if (valid) {
+	if valid {
+		fmt.Println("successfull code")
 		templ = "./static/drivers.html"
-		session.SetSession(emailAddress, w)
+		session.SetSessionCookie(emailAddress, w)
 	} else {
 		templ = "./static/login.html"
 		newCode := session.SetLoginCode(emailAddress)
-		email.SendEmail(emailAddress, newCode)
+		email.SendEmail(emailAddress, "Your F1-Go login code", newCode)
 	}
 	t, err := template.ParseFiles(templ)
 	if err != nil {
 		log.Fatalln("template parsing err:", err)
 	}
-	err = t.Execute(w, emailAddress)
+	user := users.User{Email: emailAddress, SessionId: ""}
+	err = t.Execute(w, user)
 	if err != nil {
 		log.Fatalln("template executing err:", err)
 	}

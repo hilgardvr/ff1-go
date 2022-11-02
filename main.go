@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-const port = ":9000"
+const port = ":3000"
 
 func main() {
 	err := repo.Init()
@@ -15,10 +15,9 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Starting server on port", port)
-	// http.HandleFunc("/", controllers.HomeController)
 	http.HandleFunc("/", controllers.HomeContoller)
-	http.HandleFunc("/login", controllers.LoginCodeHandler)
-	// http.HandleFunc("/login-code", controllers.LoginCodeHandler)
+	http.HandleFunc("/logincode", controllers.LoginCodeHandler)
+	http.HandleFunc("/login", controllers.LoginHandler)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
