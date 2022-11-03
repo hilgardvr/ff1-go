@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <title>FF1 Go</title>
+    </head>
+    <body>
+        <header>
+            <h2>FF1 Go</h2>
+            <h4>Fantasy F1 Game</h4>
+        </header>
+        <body>
+            <h4>You are logged in as {{.Email}}</h4>
+            <h4>Your current team:</h4>
+            {{range .Team}}
+                <li>{{.Name}}</li>
+            {{end}}
+        </body>
+    </body>
+</html>

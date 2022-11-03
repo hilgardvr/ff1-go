@@ -20,7 +20,6 @@ var loginCodes = map[string]string{}
 func GetSession(r *http.Request) (users.User, error) {
 	uuid, err := r.Cookie("session")
 	if err != nil {
-		log.Println(err)
 		return users.User{}, err
 	}
 	for _, session := range sessions {
@@ -39,7 +38,7 @@ func SetSessionCookie(email string, w http.ResponseWriter) {
 	uuidCookie := http.Cookie{Name: "session", Value: uuid, Expires: expiration}
 	http.SetCookie(w, &uuidCookie)
 	sessions = append(sessions, users.User{Email: email, SessionId: uuid})
-	fmt.Printf("Cookie set for %s with value %s", email, uuid)
+	fmt.Printf("Cookie set for %s with value %s\n", email, uuid)
 	return
 }
 
@@ -53,6 +52,10 @@ func SetLoginCode(email string) string {
 	loginCodes[email] = padded
 	fmt.Println("logincodes:", loginCodes)
 	return padded
+}
+
+func DeleteLoginCode(email string) {
+	delete(loginCodes, email)
 }
 
 func ValidateLoginCode(email string, codeToTest string) bool {
