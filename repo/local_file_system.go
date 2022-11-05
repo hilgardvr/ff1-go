@@ -3,16 +3,19 @@ package repo
 import (
 	"encoding/csv"
 	"errors"
+	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"os"
 	"strconv"
 )
 
-var parsedDrivers []drivers.Driver
-
 const driverFile = "/repo/data/drivers.csv"
 
-func Init() error {
+type LocalFileSystemRepo struct {
+ 	parsedDrivers []drivers.Driver
+}
+
+func (l *LocalFileSystemRepo) Init(config *config.Config) error {
 	path, err := getDriverFilePath()
 	if err != nil {
 		return err
@@ -31,13 +34,13 @@ func Init() error {
 	if err != nil {
 		return err
 	}
-	parsedDrivers = driverData
+	l.parsedDrivers = driverData
 	return nil
 }
 
-func GetDrivers() []drivers.Driver {
-	dst := make([]drivers.Driver, len(parsedDrivers))
-	copy(dst, parsedDrivers)
+func (l LocalFileSystemRepo) GetDrivers() []drivers.Driver {
+	dst := make([]drivers.Driver, len(l.parsedDrivers))
+	copy(dst, l.parsedDrivers)
 	return dst
 }
 

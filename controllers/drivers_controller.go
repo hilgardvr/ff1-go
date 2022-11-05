@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"encoding/json"
-	"hilgardvr/ff1-go/repo"
 	"net/http"
 )
 
+
 func GetDrivers(w http.ResponseWriter, r *http.Request) {
-	allDrivers := repo.GetDrivers()
+	allDrivers := svc.Db.GetDrivers()
 	// json, err := json.Marshal(allDrivers)
 	// if err != nil {
 	// 	log.Fatalln("template parsing err:", err)
