@@ -6,7 +6,6 @@ import (
 	"hilgardvr/ff1-go/session"
 	"hilgardvr/ff1-go/users"
 	"hilgardvr/ff1-go/view"
-	"html/template"
 	"log"
 	"net/http"
 )
@@ -38,20 +37,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	emailAddress := r.URL.Query().Get("email")
 	fmt.Println("email: ", emailAddress)
 	valid := session.ValidateLoginCode(emailAddress, code)
-	var templ string
 	if valid {
 		fmt.Println("successfull code - removing")
 		session.DeleteLoginCode(emailAddress)
 		session.SetSessionCookie(emailAddress, w)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
-		templ = "./static/login.html"
-		t, err := template.ParseFiles(templ)
-		if err != nil {
-			log.Fatalln("template parsing err:", err)
-		}
 		user := users.User{Email: emailAddress, SessionId: ""}
-		err = t.Execute(w, user)
+		err = view.LoginTemplate(w, user)
 		if err != nil {
 			log.Fatalln("template executing err:", err)
 		}

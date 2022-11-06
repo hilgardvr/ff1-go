@@ -3,6 +3,7 @@ package session
 import (
 	"errors"
 	"fmt"
+	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/users"
 	"log"
 	"math/rand"
@@ -14,8 +15,9 @@ import (
 )
 
 var sessions = []users.User{}
-var expiration = time.Now().Add(10 * time.Minute)
+var expiration = time.Now().Add(1 * time.Minute)
 var loginCodes = map[string]string{}
+var svc = service.GetService()
 
 func GetSession(r *http.Request) (users.User, error) {
 	uuid, err := r.Cookie("session")
@@ -41,8 +43,18 @@ func SetSessionCookie(email string, w http.ResponseWriter) {
 	fmt.Printf("Cookie set for %s with value %s\n", email, uuid)
 	return
 }
+// func SetSessionCookie(email string, w http.ResponseWriter) {
+// 	uuid := uuid.New().String()
+// 	uuidCookie := http.Cookie{Name: "session", Value: uuid, Expires: expiration}
+// 	http.SetCookie(w, &uuidCookie)
+// 	err := svc.Db.SaveSession(uuidCookie, email)
+// 	sessions = append(sessions, users.User{Email: email, SessionId: uuid})
+// 	fmt.Printf("Cookie set for %s with value %s\n", email, uuid)
+// 	return
+// }
 
 func SetLoginCode(email string) string {
+	svc.Db.AddUser(users.User{Email: email})
 	if code, found := loginCodes[email]; found {
 		return code
 	}
