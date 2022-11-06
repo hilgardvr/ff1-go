@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-    AppPort int `json:"APP_PORT"`
+    AppPort string `json:"APP_PORT"`
     Neo4jUri string `json:"NEO4J_URI"`
     Neo4jUsername string `json:"NEO4J_USERNAME"`
     Neo4jPassword string `json:"NEO4J_PASSWORD"`

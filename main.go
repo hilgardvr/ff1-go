@@ -8,7 +8,6 @@ import (
 	"net/http"
 )
 
-const port = ":3000"
 
 func main() {
 	config, err := config.ReadConfig("config.json")
@@ -19,10 +18,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Starting server on port", port)
+	log.Println("Starting server on port", config.AppPort)
 	http.HandleFunc("/logincode", controllers.LoginCodeHandler)
 	http.HandleFunc("/login", controllers.LoginHandler)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	http.HandleFunc("/", controllers.HomeContoller)
-	log.Fatal(http.ListenAndServe(port, nil))
+	log.Fatal(http.ListenAndServe(config.AppPort, nil))
 }

@@ -18,7 +18,7 @@ func GetService() *ServiceIO {
 }
 
 func Init(config *config.Config) error {
-	r := &repo.LocalFileSystemRepo{}
+	r := &repo.Neo4jRepo{}
 	err := r.Init(config)
 	if err != nil {
 		return err

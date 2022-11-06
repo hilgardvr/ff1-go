@@ -5,10 +5,7 @@ import (
 	"hilgardvr/ff1-go/config"
 	"log"
 	"net/smtp"
-	"os"
 )
-
-var gmailService GmailEmailService
 
 type GmailEmailService struct {
 	from string 
@@ -18,8 +15,10 @@ type GmailEmailService struct {
 }
 
 func (g *GmailEmailService) Init(config *config.Config) error {
-	g.from = os.Getenv("EMAIL_FROM")
-	g.appPassword = os.Getenv("APP_PASSWORD")
+	// g.from = os.Getenv("EMAIL_FROM")
+	// g.appPassword = os.Getenv("APP_PASSWORD")
+	g.from = config.EmailFrom
+	g.appPassword = config.EmailPassword
 	g.smtpHost = "smtp.gmail.com"
 	g.smtpPort = "587"
 	if g.appPassword == "" || g.from == "" {
