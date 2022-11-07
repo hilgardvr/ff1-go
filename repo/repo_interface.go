@@ -10,7 +10,7 @@ import (
 type Repo interface {
 	Init(*config.Config) error
 	GetDrivers() []drivers.Driver
-	AddUser(users.User) error
+	AddUser(users.User) (users.User, error)
 	SaveSession(users.User, http.Cookie) error
 	GetUserFromSession(http.Cookie) (users.User, error)
 }

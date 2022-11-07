@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"errors"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/users"
@@ -43,21 +44,39 @@ func (n Neo4jRepo)GetDrivers() []drivers.Driver {
 	return []drivers.Driver{}
 }
 
-func (n Neo4jRepo)AddUser(user users.User) error {
+func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
 	}()
-	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-		_, err := tx.Run(`
-			merge (u:User {email: $email})
+	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			merge (u:User {Email: $email})
+			return u { .* } as user
 		`,
 		map[string]interface{}{
 			"email": user.Email,
 		})
-		return user.Email, err
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
+		// return user.Email, err
 	})
-	return err
+	email, found := result.(map[string]interface{})["Email"] 
+	if !found {
+		return users.User{}, err
+	}
+	u := users.User{
+		SessionId: "",
+		Email: email.(string),
+	}
+	return u, err
 }
 
 func (n Neo4jRepo)SaveSession(users.User, http.Cookie) error {
