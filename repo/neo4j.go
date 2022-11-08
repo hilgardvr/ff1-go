@@ -5,12 +5,6 @@ import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/users"
-	"net/http"
-
-	// "io"
-	// "io/ioutil"
-	// "net/http"
-	// "os/user"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -77,12 +71,4 @@ func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {
 		Email: email.(string),
 	}
 	return u, err
-}
-
-func (n Neo4jRepo)SaveSession(users.User, http.Cookie) error {
-	return nil
-}
-
-func (n Neo4jRepo)GetUserFromSession(http.Cookie) (users.User, error) {
-	return users.User{}, nil
 }
