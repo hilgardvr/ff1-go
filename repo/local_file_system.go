@@ -7,9 +7,7 @@ import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/users"
-	"log"
 	"math/rand"
-	"net/http"
 	"os"
 	"strconv"
 )
@@ -19,7 +17,8 @@ const driverFile = "/repo/data/drivers.csv"
 type LocalFileSystemRepo struct {
  	parsedDrivers []drivers.Driver
 	users []users.User
- 	sessions []users.User
+	//uuid - email
+ 	sessions map[string]string
 	loginCodes map[string]string
 }
 
@@ -43,7 +42,7 @@ func (l *LocalFileSystemRepo) Init(config *config.Config) error {
 		return err
 	}
 	l.parsedDrivers = driverData
-	l.sessions = []users.User{}
+	l.sessions = map[string]string{}
 	l.loginCodes = map[string]string{}
 	return nil
 }
@@ -59,21 +58,6 @@ func (l LocalFileSystemRepo) AddUser(u users.User) (users.User, error) {
 	return u, nil
 }
 
-func (l LocalFileSystemRepo) GetSession(r *http.Request) (users.User, error) {
-	uuid, err := r.Cookie("session")
-	if err != nil {
-		return users.User{}, err
-	}
-	for _, session := range l.sessions {
-		if session.SessionId == uuid.Value  {
-			fmt.Println("Found cookie for ", session.Email)
-			return session, nil
-		}
-	}
-	err = errors.New("Could not find an existing session")
-	log.Println(err)
-	return users.User{}, err
-}
 
 func (l LocalFileSystemRepo) SetLoginCode(email string) string {
 	if code, found := l.loginCodes[email]; found {
@@ -96,6 +80,19 @@ func (l LocalFileSystemRepo) ValidateLoginCode(email string, codeToTest string) 
 		return code == codeToTest
 	}
 	return false
+}
+
+func (l LocalFileSystemRepo) SaveSession(email, uuid string) error {
+	l.sessions[uuid] = email
+	return nil
+}
+
+func (l LocalFileSystemRepo) GetSession(uuid string) (string, bool) {
+	email := l.sessions[uuid]
+	if email == "" {
+		return "", false
+	}
+	return email, true
 }
 
 

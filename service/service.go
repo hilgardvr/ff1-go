@@ -13,7 +13,7 @@ type ServiceIO struct {
 	EmailService email.EmailService
 }
 
-func GetService() *ServiceIO {
+func GetServiceIO() *ServiceIO {
 	return &svc
 }
 

@@ -67,7 +67,6 @@ func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {
 		return users.User{}, err
 	}
 	u := users.User{
-		SessionId: "",
 		Email: email.(string),
 	}
 	return u, err

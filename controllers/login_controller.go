@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-var svc = service.GetService()
+var svc = service.GetServiceIO()
 
 func LoginCodeHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
@@ -20,7 +20,7 @@ func LoginCodeHandler(w http.ResponseWriter, r *http.Request) {
 	emailAddress := r.Form.Get("email")
 	newCode := svc.Db.SetLoginCode(emailAddress)
 	svc.EmailService.SendEmail(emailAddress, "Your F1-Go login code", newCode)
-	user := users.User{Email: emailAddress, SessionId: ""}
+	user := users.User{Email: emailAddress}
 	err = view.LoginTemplate(w, user)
 	if err != nil {
 		log.Fatalln("template executing err:", err)
@@ -40,10 +40,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if valid {
 		fmt.Println("successfull code - removing")
 		svc.Db.DeleteLoginCode(emailAddress)
-		session.SetSessionCookie(emailAddress, w)
+		err = session.SetSessionCookie(emailAddress, w)
+		if err != nil {
+			log.Println("Could not set session:", err)
+		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
-		user := users.User{Email: emailAddress, SessionId: ""}
+		user := users.User{Email: emailAddress}
 		err = view.LoginTemplate(w, user)
 		if err != nil {
 			log.Fatalln("template executing err:", err)
