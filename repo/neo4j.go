@@ -45,7 +45,7 @@ func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {
 	}()
 	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
-			merge (u:User {Email: $email})
+			merge (u:User {email: $email})
 			return u { .* } as user
 		`,
 		map[string]interface{}{
@@ -60,9 +60,8 @@ func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {
 			return users.User{}, errors.New("Could not find user in result")
 		}
 		return user, nil
-		// return user.Email, err
 	})
-	email, found := result.(map[string]interface{})["Email"] 
+	email, found := result.(map[string]interface{})["email"] 
 	if !found {
 		return users.User{}, err
 	}
@@ -70,4 +69,142 @@ func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {
 		Email: email.(string),
 	}
 	return u, err
+}
+
+func (n Neo4jRepo) SetLoginCode(email string, generatedCode string) (string, error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			merge (u:User {email: $email})
+			set u.loginCode = $generatedCode
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"email": email,
+			"generatedCode": generatedCode,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
+	})
+	code, found := result.(map[string]interface{})["loginCode"] 
+	if !found {
+		return "", err
+	}
+	c := code.(string)
+	return c, err
+}
+
+func (n Neo4jRepo)DeleteLoginCode(email string) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})
+			set u.loginCode = null
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"email": email,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
+	})
+	return err
+}
+
+func (n Neo4jRepo) ValidateLoginCode(email string, codeToTest string) bool {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email, loginCode: $loginCode})
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"email": email,
+			"loginCode": codeToTest,
+		})
+		record, err := result.Single()
+		return record, err
+	})
+	return err == nil
+}
+
+func (n Neo4jRepo)SaveSession(email, uuid string) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})
+			set u.sessionId = $uuid
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"email": email,
+			"uuid": uuid,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
+	})
+	return err
+}
+
+func (n Neo4jRepo)GetSession(uuid string) (string, bool) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {sessionId: $uuid})
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"uuid": uuid,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
+	})
+	if err != nil {
+		return "", false
+	}
+	email, found := result.(map[string]interface{})["email"] 
+	return email.(string), found
 }

@@ -11,8 +11,8 @@ type Repo interface {
 	GetDrivers() []drivers.Driver
 	AddUser(users.User) (users.User, error)
 
-	SetLoginCode(email string) string
-	DeleteLoginCode(email string)
+	SetLoginCode(email string, generatedCode string) (string, error)
+	DeleteLoginCode(email string) error
 	ValidateLoginCode(email string, codeToTest string) bool
 
 	SaveSession(email, uuid string) error

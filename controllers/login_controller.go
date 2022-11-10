@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"hilgardvr/ff1-go/helpers"
 	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
 	"hilgardvr/ff1-go/users"
@@ -18,8 +19,14 @@ func LoginCodeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln("Could not parse form")
 	}
 	emailAddress := r.Form.Get("email")
-	newCode := svc.Db.SetLoginCode(emailAddress)
-	svc.EmailService.SendEmail(emailAddress, "Your F1-Go login code", newCode)
+	generatedCode := helpers.GenerateLoginCode()
+	newCode, err := svc.Db.SetLoginCode(emailAddress, generatedCode)
+	if err != nil {
+		log.Println("Could not set login code")
+		svc.EmailService.SendEmail(emailAddress, "F1-Go login code", "Failed to generate a login code - pls try again")
+	} else {
+		svc.EmailService.SendEmail(emailAddress, "Your F1-Go login code", newCode)
+	}
 	user := users.User{Email: emailAddress}
 	err = view.LoginTemplate(w, user)
 	if err != nil {
@@ -51,7 +58,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatalln("template executing err:", err)
 		}
-		newCode := svc.Db.SetLoginCode(emailAddress)
-		svc.EmailService.SendEmail(emailAddress, "Your F1-Go login code", newCode)
+		generatedCode := helpers.GenerateLoginCode()
+		newCode, err := svc.Db.SetLoginCode(emailAddress, generatedCode)
+		if err != nil {
+			log.Println("Could not set login code")
+		} else {
+			svc.EmailService.SendEmail(emailAddress, "Your F1-Go login code", newCode)
+		}
 	}
 }

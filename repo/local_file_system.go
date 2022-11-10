@@ -7,7 +7,6 @@ import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/users"
-	"math/rand"
 	"os"
 	"strconv"
 )
@@ -59,20 +58,14 @@ func (l LocalFileSystemRepo) AddUser(u users.User) (users.User, error) {
 }
 
 
-func (l LocalFileSystemRepo) SetLoginCode(email string) string {
-	if code, found := l.loginCodes[email]; found {
-		return code
-	}
-	code := rand.Intn(100000)
-	str := strconv.Itoa(code)
-	padded := fmt.Sprintf("%05s", str)
-	l.loginCodes[email] = padded
-	fmt.Println("logincodes:", l.loginCodes)
-	return padded
+func (l LocalFileSystemRepo) SetLoginCode(email string, generatedCode string) (string, error) {
+	l.loginCodes[email] = generatedCode
+	return generatedCode, nil
 }
 
-func (l LocalFileSystemRepo) DeleteLoginCode(email string) {
+func (l LocalFileSystemRepo) DeleteLoginCode(email string) error {
 	delete(l.loginCodes, email)
+	return nil
 }
 
 func (l LocalFileSystemRepo) ValidateLoginCode(email string, codeToTest string) bool {
