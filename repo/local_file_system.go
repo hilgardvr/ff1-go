@@ -3,7 +3,6 @@ package repo
 import (
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/users"
