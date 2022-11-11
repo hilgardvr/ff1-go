@@ -46,7 +46,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	valid := svc.Db.ValidateLoginCode(emailAddress, code)
 	if valid {
 		fmt.Println("successfull code - removing")
-		svc.Db.DeleteLoginCode(emailAddress)
 		err = session.SetSessionCookie(emailAddress, w)
 		if err != nil {
 			log.Println("Could not set session:", err)

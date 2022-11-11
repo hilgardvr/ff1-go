@@ -4,6 +4,7 @@ import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/users"
+	"time"
 )
 
 type Repo interface {
@@ -15,6 +16,6 @@ type Repo interface {
 	DeleteLoginCode(email string) error
 	ValidateLoginCode(email string, codeToTest string) bool
 
-	SaveSession(email, uuid string) error
+	SaveSession(email, uuid string, duration time.Duration) error
 	GetSession(uuid string) (string, bool)
 }
