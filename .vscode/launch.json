@@ -3,5 +3,21 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": []
+    "configurations": [
+        {
+            "name": "Launch Package",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/main.go",
+            "env": {
+                "APP_PORT": ":3000",
+                "NEO4J_URI": "bolt://127.0.0.1:7687",
+                "NEO4J_USERNAME": "neo4j",
+                "NEO4J_PASSWORD": "password123",
+                "APP_PASSWORD": "some_pw",
+                "EMAIL_FROM": "someemail@gmail.com"
+            }
+        }
+    ]
 }
