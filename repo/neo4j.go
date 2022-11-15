@@ -1,10 +1,13 @@
 package repo
 
 import (
+	"encoding/csv"
 	"errors"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/users"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -32,8 +35,88 @@ func (n *Neo4jRepo)Init(config *config.Config) error {
 		return err
 	}
 	n.driver = driver
+	createDriverData()
 	return nil
 }
+
+func readDriverData() ([][]string, error) {
+	path, err := getDriverFilePath()
+	if err != nil {
+		return [][]string{}, err
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return [][]string{}, err
+	}
+	defer f.Close()
+	csvReader := csv.NewReader(f)
+	data, err := csvReader.ReadAll()
+	return data, err
+}
+
+func createDriverData() ([]drivers.Driver, error) {
+	driverData, err := readDriverData()
+	if err != nil {
+		return []drivers.Driver{}, err
+	}
+	var allDrivers []drivers.Driver
+	for _, line := range driverData {
+		if len(line) != 3 {
+			return allDrivers, errors.New("Driver data unexpected format")
+		}
+		id, err := strconv.Atoi(line[0])
+		if err != nil {
+			return allDrivers, err
+		}
+		name := line[1]
+		points, err := strconv.Atoi(line[2])
+		if err != nil {
+			return allDrivers, err
+		}
+		driver := drivers.Driver{
+			Id:     id,
+			Name:   name,
+			Points: points,
+			Price:  0,
+		}
+		allDrivers = append(allDrivers, driver)
+	}
+	allDrivers = drivers.AssignPrices(allDrivers)
+	return allDrivers, nil
+}
+
+// func (n Neo4jRepo)saveDriverData() error {
+// 	session := n.driver.NewSession(neo4j.SessionConfig{})
+// 	defer func() {
+// 		session.Close()
+// 	}()
+// 	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+// 		result, err := tx.Run(`
+// 			merge (u:User {email: $email})
+// 			return u { .* } as user
+// 		`,
+// 		map[string]interface{}{
+// 			"email": user.Email,
+// 		})
+// 		record, err := result.Single()
+// 		if err != nil {
+// 			return users.User{}, err
+// 		}
+// 		user, found := record.Get("user")
+// 		if !found {
+// 			return users.User{}, errors.New("Could not find user in result")
+// 		}
+// 		return user, nil
+// 	})
+// 	email, found := result.(map[string]interface{})["email"] 
+// 	if !found {
+// 		return users.User{}, err
+// 	}
+// 	u := users.User{
+// 		Email: email.(string),
+// 	}
+// 	return u, err
+// }
 	
 func (n Neo4jRepo)GetDrivers() []drivers.Driver {
 	return []drivers.Driver{}

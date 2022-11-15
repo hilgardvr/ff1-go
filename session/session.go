@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var expiration = time.Minute * 2
+var expiration = time.Hour
 
 var svc = service.GetServiceIO()
 

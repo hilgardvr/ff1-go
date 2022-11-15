@@ -22,6 +22,7 @@ func main() {
 	http.HandleFunc("/logincode", controllers.LoginCodeHandler)
 	http.HandleFunc("/login", controllers.LoginHandler)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
+	http.HandleFunc("/pick-team", controllers.HomeContoller)
 	http.HandleFunc("/", controllers.HomeContoller)
 	log.Fatal(http.ListenAndServe(config.AppPort, nil))
 }
