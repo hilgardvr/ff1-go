@@ -12,11 +12,12 @@ import (
 )
 
 var expiration = time.Hour
+var cookieName = "session"
 
 var svc = service.GetServiceIO()
 
-func GetSession(r *http.Request) (users.User, error) {
-	uuid, err := r.Cookie("session")
+func GetUserSession(r *http.Request) (users.User, error) {
+	uuid, err := r.Cookie(cookieName)
 	if err != nil {
 		return users.User{}, err
 	}
@@ -29,8 +30,12 @@ func GetSession(r *http.Request) (users.User, error) {
 
 func SetSessionCookie(email string, w http.ResponseWriter) error {
 	uuid := uuid.New().String()
-	uuidCookie := http.Cookie{Name: "session", Value: uuid, Expires: time.Now().Add(expiration)}
+	uuidCookie := http.Cookie{Name: cookieName, Value: uuid, Expires: time.Now().Add(expiration)}
 	http.SetCookie(w, &uuidCookie)
 	err := svc.Db.SaveSession(email, uuid, expiration)
 	return err
+}
+
+func DeleteUserSession(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Expires: time.Now()})
 }

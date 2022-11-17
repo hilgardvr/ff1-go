@@ -1,0 +1,22 @@
+{{ define "base" }}
+<html lang="en">
+    <head>
+        <title>FF1 Go</title>
+    </head>
+    <body>
+        <header>
+            <h2>FF1 Go</h2>
+            <h4>Fantasy F1 Game</h4>
+            {{ if .Email }}
+                <h4>You are logged in as {{.Email}}</h4>
+                <form action="/logout" method="delete">
+                    <input type="submit" value="Logout"/>
+                </form>
+            {{ end }}
+        </header>
+        <body>
+            {{ template "main" . }}
+        </body>
+    </body>
+</html>
+{{ end }}

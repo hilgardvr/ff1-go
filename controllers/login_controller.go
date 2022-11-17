@@ -66,3 +66,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	session.DeleteUserSession(w)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}

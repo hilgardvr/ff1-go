@@ -7,11 +7,12 @@ import (
 	"fmt"
 )
 
-var base = "./view/templates/"
-var getLoginCode = base + "get_login_code.html"
-var login = base + "login.html"
-var home = base + "home.html"
-var drivers = base + "drivers.html"
+var basePath = "./view/templates/"
+var getLoginCode = basePath + "get_login_code.html"
+var login = basePath + "login.html"
+var home = basePath + "home.html"
+var drivers = basePath + "drivers.html"
+var base = basePath + "base.html"
 
 func LoginCodeTemplate(w http.ResponseWriter) error {
 	fmt.Println(getLoginCode)
@@ -35,11 +36,11 @@ func LoginTemplate(w http.ResponseWriter, user users.User) error {
 
 func HomeTemplate(w http.ResponseWriter, user users.User) error {
 	fmt.Println(home)
-	t, err := template.ParseFiles(home)
+	t, err := template.ParseFiles(home, base)
 	if err != nil {
 		return err
 	}
-	err = t.Execute(w, user) 
+	err = t.ExecuteTemplate(w, "base", user) 
 	return err
 }
 

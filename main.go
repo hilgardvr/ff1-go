@@ -19,10 +19,11 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Starting server on port", config.AppPort)
-	http.HandleFunc("/logincode", controllers.LoginCodeHandler)
-	http.HandleFunc("/login", controllers.LoginHandler)
-	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
-	http.HandleFunc("/pick-team", controllers.HomeContoller)
-	http.HandleFunc("/", controllers.HomeContoller)
+	http.HandleFunc(controllers.LoginCode, controllers.LoginCodeHandler)
+	http.HandleFunc(controllers.Login, controllers.LoginHandler)
+	http.HandleFunc(controllers.Logout, controllers.LoginHandler)
+	// http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
+	http.HandleFunc(controllers.PickTeam, controllers.HomeContoller)
+	http.HandleFunc(controllers.Home, controllers.HomeContoller)
 	log.Fatal(http.ListenAndServe(config.AppPort, nil))
 }

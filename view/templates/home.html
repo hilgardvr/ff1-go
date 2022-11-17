@@ -1,22 +1,12 @@
-<html>
-    <head>
-        <title>FF1 Go</title>
-    </head>
-    <body>
-        <header>
-            <h2>FF1 Go</h2>
-            <h4>Fantasy F1 Game</h4>
-        </header>
-        <body>
-            <h4>You are logged in as {{.Email}}</h4>
-            {{ if .Team }}
-                <h4>Your current team:</h4>
-                {{range .Team}}
-                    <li>{{.Name}}</li>
-                {{ end }}
-            {{ else }}
-                <input type="submit" formaction="/pick-team" value="Pick Drivers"/>
-            {{ end }}
-        </body>
-    </body>
-</html>
+{{ define "main" }}
+    {{ if .Team }}
+        <h4>Your current team:</h4>
+        {{range .Team}}
+            <li>{{.Name}}</li>
+        {{ end }}
+    {{ else }}
+        <form action="/pick-team" method="get" >
+            <input type="submit" value="Pick Drivers"/>
+        </form>
+    {{ end }}
+{{ end }}

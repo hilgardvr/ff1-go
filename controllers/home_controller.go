@@ -8,9 +8,15 @@ import (
 	"net/http"
 )
 
+const PickTeam = "/pick-team"
+const LoginCode = "/logincode"
+const Login = "/login"
+const Logout = "/logout"
+const Home = "/"
+
 
 func HomeContoller(w http.ResponseWriter, r *http.Request) {
-	user, err := session.GetSession(r)
+	user, err := session.GetUserSession(r)
 	if err != nil {
 		fmt.Println("no session found")
 		err = view.LoginCodeTemplate(w)
@@ -19,6 +25,13 @@ func HomeContoller(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		fmt.Println("session found for email:", user.Email)
-		err = view.HomeTemplate(w, user)
+		if r.URL.Path == PickTeam {
+			err = view.HomeTemplate(w, user)
+		} else {
+			err = view.HomeTemplate(w, user)
+		}
+		if err != nil {
+			log.Fatalln("template executing err:", err)
+		}
 	}
 }

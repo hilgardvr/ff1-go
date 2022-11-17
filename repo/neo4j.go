@@ -241,19 +241,6 @@ func (n Neo4jRepo) SaveSession(email, uuid string, duration time.Duration) error
 		session.Close()
 	}()
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-		// _, err := tx.Run(`
-		// 	match (u:User {email: $email})
-		// 	match (u)-[:HAS_SESSION]->(s:Session)
-		// 	where s.expiry < timestamp()
-		// 	detach delete s
-		// `,
-		// map[string]interface{}{
-		// 	"email": email,
-		// })
-		// if err != nil {
-		// 	return users.User{}, err
-		// }
-		// fmt.Println("duration:", duration.Milliseconds())
 		result, err := tx.Run(`
 			match (u:User {email: $email})
 			merge (s:Session {uuid: $uuid})
