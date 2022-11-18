@@ -3,15 +3,12 @@ package controllers
 import (
 	"fmt"
 	"hilgardvr/ff1-go/helpers"
-	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
 	"hilgardvr/ff1-go/users"
 	"hilgardvr/ff1-go/view"
 	"log"
 	"net/http"
 )
-
-var svc = service.GetServiceIO()
 
 func LoginCodeHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()

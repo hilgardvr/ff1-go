@@ -18,4 +18,6 @@ type Repo interface {
 
 	SaveSession(email, uuid string, duration time.Duration) error
 	GetSession(uuid string) (string, bool)
+
+	SaveTeamName(users.User, string) error
 }

@@ -1,20 +1,13 @@
-<html>
-    <head>
-        <title>FF1 Go</title>
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    </head>
+{{ define "main" }}
     <body>
-        <div 
-            x-data="{all_drivers: [], selected_drivers: []}"
-            x-init="all_drivers = await (await fetch('/api/all_drivers')).json()"
-        >
-	    <h2>Drivers</h2>
-            <ul>
-                <template x-for="driver in all_drivers">
-                    <li x-text="driver.name"></li>
-                </template>
-            </ul>
-        </div>
-
+        <form action="/submit-team-name" method="post">
+            <div>
+                <label for="team-name">Team Name:</label>
+                <input type="text" name="team-name" id="team-name" required>
+            </div>
+            <div>
+                <input type="submit" value="Create My Team">
+            </div>
+        </form>
     </body>
-</html>
+{{ end }}

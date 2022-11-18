@@ -17,6 +17,8 @@ type Neo4jRepo struct {
 	driver neo4j.Driver
 }
 
+var driverData = []drivers.Driver{}
+
 func (n *Neo4jRepo)Init(config *config.Config) error {
 	driver, err := neo4j.NewDriver(
 		config.Neo4jUri,
@@ -35,8 +37,8 @@ func (n *Neo4jRepo)Init(config *config.Config) error {
 		return err
 	}
 	n.driver = driver
-	createDriverData()
-	return nil
+	driverData, err = createDriverData()
+	return err
 }
 
 func readDriverData() ([][]string, error) {
@@ -84,42 +86,9 @@ func createDriverData() ([]drivers.Driver, error) {
 	allDrivers = drivers.AssignPrices(allDrivers)
 	return allDrivers, nil
 }
-
-// func (n Neo4jRepo)saveDriverData() error {
-// 	session := n.driver.NewSession(neo4j.SessionConfig{})
-// 	defer func() {
-// 		session.Close()
-// 	}()
-// 	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-// 		result, err := tx.Run(`
-// 			merge (u:User {email: $email})
-// 			return u { .* } as user
-// 		`,
-// 		map[string]interface{}{
-// 			"email": user.Email,
-// 		})
-// 		record, err := result.Single()
-// 		if err != nil {
-// 			return users.User{}, err
-// 		}
-// 		user, found := record.Get("user")
-// 		if !found {
-// 			return users.User{}, errors.New("Could not find user in result")
-// 		}
-// 		return user, nil
-// 	})
-// 	email, found := result.(map[string]interface{})["email"] 
-// 	if !found {
-// 		return users.User{}, err
-// 	}
-// 	u := users.User{
-// 		Email: email.(string),
-// 	}
-// 	return u, err
-// }
 	
 func (n Neo4jRepo)GetDrivers() []drivers.Driver {
-	return []drivers.Driver{}
+	return driverData
 }
 
 func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {
@@ -302,4 +271,33 @@ func (n Neo4jRepo) GetSession(uuid string) (string, bool) {
 	email := res.(string)
 	n.DeleteLoginCode(email)
 	return email, found
+}
+
+func (n Neo4jRepo) SaveTeamName(user users.User, teamName string) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})
+			merge (t:Team {name: $teamName})
+			merge (u)-[h:HAS_TEAM]->(t)
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+			"teamName": teamName,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
+	})
+	return err
 }

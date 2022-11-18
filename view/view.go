@@ -36,7 +36,7 @@ func LoginTemplate(w http.ResponseWriter, user users.User) error {
 
 func HomeTemplate(w http.ResponseWriter, user users.User) error {
 	fmt.Println(home)
-	t, err := template.ParseFiles(home, base)
+	t, err := template.ParseFiles(base, home)
 	if err != nil {
 		return err
 	}
@@ -44,12 +44,12 @@ func HomeTemplate(w http.ResponseWriter, user users.User) error {
 	return err
 }
 
-func DriversTemplate(w http.ResponseWriter) error {
+func DriversTemplate(w http.ResponseWriter, user users.User) error {
 	fmt.Println(drivers)
-	t, err := template.ParseFiles(drivers)
+	t, err := template.ParseFiles(base, drivers)
 	if err != nil {
 		return err
 	}
-	err = t.Execute(w, "")
+	err = t.ExecuteTemplate(w, "base", user)
 	return err
 }

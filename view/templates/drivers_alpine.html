@@ -1,19 +1,19 @@
-<html>
-    <head>
-        <title>FF1 Go</title>
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    </head>
+{{ define "main" }}
     <body>
         <div 
             x-data="{all_drivers: [], selected_drivers: []}"
             x-init="all_drivers = await (await fetch('/api/all_drivers')).json()"
         >
+        <h2>Drivers</h2>
             <ul>
                 <template x-for="driver in all_drivers">
-                    <li x-text="driver.name"></li>
+                    <li>
+                        <div x-text="driver.name"></div>
+                        <div x-text="driver.price"></div>
+                    </li>
                 </template>
             </ul>
         </div>
 
     </body>
-</html>
+{{ end }}
