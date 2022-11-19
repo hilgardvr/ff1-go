@@ -12,6 +12,7 @@ var getLoginCode = basePath + "get_login_code.html"
 var login = basePath + "login.html"
 var home = basePath + "home.html"
 var drivers = basePath + "drivers.html"
+var driversAlpine = basePath + "drivers_alpine.html"
 var base = basePath + "base.html"
 
 func LoginCodeTemplate(w http.ResponseWriter) error {
@@ -46,7 +47,7 @@ func HomeTemplate(w http.ResponseWriter, user users.User) error {
 
 func DriversTemplate(w http.ResponseWriter, user users.User) error {
 	fmt.Println(drivers)
-	t, err := template.ParseFiles(base, drivers)
+	t, err := template.ParseFiles(base, driversAlpine)
 	if err != nil {
 		return err
 	}

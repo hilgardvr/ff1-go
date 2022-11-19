@@ -8,7 +8,6 @@ import (
 	"net/http"
 )
 
-
 func main() {
 	config, err := config.ReadConfig("config.json")
 	if err != nil {
@@ -18,12 +17,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Starting server on port", config.AppPort)
 	http.HandleFunc(controllers.LoginCode, controllers.LoginCodeHandler)
 	http.HandleFunc(controllers.Login, controllers.LoginHandler)
-	http.HandleFunc(controllers.Logout, controllers.LoginHandler)
+	http.HandleFunc(controllers.Logout, controllers.LogoutHandler)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	http.HandleFunc(controllers.PickTeam, controllers.HomeContoller)
 	http.HandleFunc(controllers.Home, controllers.HomeContoller)
+	log.Println("Starting server on port", config.AppPort)
 	log.Fatal(http.ListenAndServe(config.AppPort, nil))
 }

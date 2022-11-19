@@ -1,18 +1,52 @@
 {{ define "main" }}
     <body>
         <div 
-            x-data="{all_drivers: [], selected_drivers: []}"
-            x-init="all_drivers = await (await fetch('/api/all_drivers')).json()"
+            x-data="{
+                allDrivers: [], 
+                selectedDrivers: [], 
+                get totalCost() { 
+                    return this.selectedDrivers.reduce((acc, i) => acc + i.price, 0)
+                },
+                get selected() { return this.selectedDrivers.sort((a,b) => a.price < b.price) },
+                get available() { return this.allDrivers.sort((a,b) => a.price < b.price) },
+                addDriver(driver, list) {
+                    list.push(driver)
+                },
+                removeDriver(driver, list) {
+                    const index = list.indexOf(driver)
+                    if (index > -1) {
+                        list.splice(index, 1)
+                    }
+                }
+            }"
+            x-init="allDrivers = await (await fetch('/api/all_drivers')).json()"
         >
         <h2>Drivers</h2>
-            <ul>
-                <template x-for="driver in all_drivers">
-                    <li>
-                        <div x-text="driver.name"></div>
-                        <div x-text="driver.price"></div>
+            <div>
+                <h4>Selected Drivers</h4>
+                <h5>Budget Spent: $<span x-text="totalCost"></span></h5>
+                <template x-for="driver in selected">
+                    <li> 
+                        <span x-text="driver.name"></span>
+                        <span>$</span>
+                        <span x-text="driver.price"></span>
+                        <button x-on:click="addDriver(driver, allDrivers);removeDriver(driver, selectedDrivers)">Remove</button>
                     </li>
                 </template>
-            </ul>
+            </div>
+
+            <div>
+                <h4>Available Drivers</h4>
+                <ul>
+                    <template x-for="driver in available">
+                        <li>
+                            <span x-text="driver.name"></span>
+                            <span x-text="driver.price"></span>
+                            <button x-on:click="addDriver(driver, selectedDrivers);removeDriver(driver, allDrivers)">Select</button>
+                        </li>
+                    </template>
+                </ul>
+            </div>
         </div>
 
     </body>
