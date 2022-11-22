@@ -4,8 +4,9 @@
             x-data="{
                 allDrivers: [], 
                 selectedDrivers: [], 
+                budget: 0,
                 get totalCost() { 
-                    return this.selectedDrivers.reduce((acc, i) => acc + i.price, 0)
+                    return this.budget - this.selectedDrivers.reduce((acc, i) => acc + i.price, 0)
                 },
                 get selected() { return this.selectedDrivers.sort((a,b) => a.price < b.price) },
                 get available() { return this.allDrivers.sort((a,b) => a.price < b.price) },
@@ -19,12 +20,14 @@
                     }
                 }
             }"
-            x-init="allDrivers = await (await fetch('/api/all_drivers')).json()"
+            x-init="
+                allDrivers = await (await fetch('/api/all_drivers')).json()
+                budget = await (await fetch('/api/budget')).json()
+            "
         >
-        <h2>Drivers</h2>
             <div>
+                <h5>Budget Left: $<span x-text="totalCost"></span></h5>
                 <h4>Selected Drivers</h4>
-                <h5>Budget Spent: $<span x-text="totalCost"></span></h5>
                 <template x-for="driver in selected">
                     <li> 
                         <span x-text="driver.name"></span>
@@ -35,18 +38,29 @@
                 </template>
             </div>
 
+            <div x-data="{ 
+                get isInvalid() { return totalCost < 0 || selectedDrivers.length != 4 }
+            }">
+
+                <h4 x-show="isInvalid">You team needs to cost less than <span x-text="budget"></span> and you need to select 4 drivers</h4>
+
+                <button  x-bind:disabled="isInvalid">Save Team</button>
+            </div>
+
             <div>
                 <h4>Available Drivers</h4>
                 <ul>
                     <template x-for="driver in available">
                         <li>
                             <span x-text="driver.name"></span>
+                            <span>$</span>
                             <span x-text="driver.price"></span>
                             <button x-on:click="addDriver(driver, selectedDrivers);removeDriver(driver, allDrivers)">Select</button>
                         </li>
                     </template>
                 </ul>
             </div>
+
         </div>
 
     </body>
