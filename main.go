@@ -22,6 +22,7 @@ func main() {
 	http.HandleFunc(controllers.Logout, controllers.LogoutHandler)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	http.HandleFunc("/api/budget", controllers.GetBudget)
+	http.HandleFunc("/api/save-team", controllers.SaveController)
 	http.HandleFunc(controllers.PickTeam, controllers.HomeContoller)
 	http.HandleFunc(controllers.Home, controllers.HomeContoller)
 	log.Println("Starting server on port", config.AppPort)

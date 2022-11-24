@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
+	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
 	"hilgardvr/ff1-go/view"
@@ -18,6 +20,19 @@ const Home = "/"
 
 var svc = service.GetServiceIO()
 
+func SaveController(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		log.Println("Failed to get user", err)
+	}
+	var drivers []drivers.Driver
+	err = json.NewDecoder(r.Body).Decode(&drivers)
+	if err != nil {
+		log.Println("Failed to parse drivers", err)
+	}
+	fmt.Println(user)
+	fmt.Println(drivers)
+}
 
 func HomeContoller(w http.ResponseWriter, r *http.Request) {
 	user, err := session.GetUserSession(r)

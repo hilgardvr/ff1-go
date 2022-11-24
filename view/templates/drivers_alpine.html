@@ -26,7 +26,7 @@
 
                     <h4 x-show="isInvalid">You team needs to cost less than <span x-text="data.budget"></span> and you need to select exactly 4 drivers</h4>
 
-                    <button x-bind:disabled="isInvalid" x-on:click="await fetch('/api/budget')">Save Team</button>
+                    <button x-bind:disabled="isInvalid" x-on:click="submitForm">Save Team</button>
                 </div>
 
                 <div>
@@ -69,7 +69,13 @@
                             }
                         },
                         submitForm() {
-                            console.log(JSON.stringify(this.data.selectedDrivers))
+                            fetch("/api/save-team", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(this.data.selectedDrivers)
+                            })
                         }
                     }
                 }
