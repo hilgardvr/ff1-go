@@ -273,21 +273,25 @@ func (n Neo4jRepo) GetSession(uuid string) (string, bool) {
 	return email, found
 }
 
-func (n Neo4jRepo) SaveTeamName(user users.User, teamName string) error {
+func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver) error {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
 	}()
+	var drivers []int
+	for _, d := range selectedDrivers {
+		drivers = append(drivers, d.Id)
+	}
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (u:User {email: $email})
-			merge (t:Team {name: $teamName})
+			merge (t:Team {drivers: $team})
 			merge (u)-[h:HAS_TEAM]->(t)
 			return u { .* } as user
 		`,
 		map[string]interface{}{
 			"email": user.Email,
-			"teamName": teamName,
+			"team": drivers,
 		})
 		record, err := result.Single()
 		if err != nil {
@@ -300,4 +304,45 @@ func (n Neo4jRepo) SaveTeamName(user users.User, teamName string) error {
 		return user, nil
 	})
 	return err
+}
+
+func (n Neo4jRepo) GetTeam(user users.User) ([]drivers.Driver, error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)
+			return t.drivers as team
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		team, found := record.Get("team")
+		if !found {
+			return []drivers.Driver{}, errors.New("Could not find user in result")
+		}
+		return team, nil
+	})
+	if err != nil {
+		return []drivers.Driver{}, err
+	}
+	res, found := result.([]interface{})
+	if !found {
+		return []drivers.Driver{}, errors.New("Could not find the team in db results")
+	}
+	var drivers []drivers.Driver
+	for _, driverId := range res {
+		for _, d := range driverData {
+			if d.Id == int(driverId.(int64)) {
+				drivers = append(drivers, d)
+			}
+		}
+	}
+	return drivers, err
 }

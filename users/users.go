@@ -1,8 +1,8 @@
 package users
 
-import "database/sql/driver"
+import "hilgardvr/ff1-go/drivers"
 
 type User struct {
 	Email string
-	Team []driver.Driver
+	Team []drivers.Driver
 }

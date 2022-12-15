@@ -1,10 +1,10 @@
 package view
 
 import (
+	"fmt"
 	"hilgardvr/ff1-go/users"
 	"html/template"
 	"net/http"
-	"fmt"
 )
 
 var basePath = "./view/templates/"
