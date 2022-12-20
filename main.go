@@ -24,7 +24,7 @@ func main() {
 	http.HandleFunc("/api/budget", controllers.GetBudget)
 	http.HandleFunc("/api/save-team", controllers.SaveController)
 	http.HandleFunc(controllers.PickTeam, controllers.PickTeamController)
-	http.HandleFunc(controllers.RepickTeam, controllers.RepickController)
+	http.HandleFunc(controllers.RepickTeam, controllers.PickTeamController)
 	http.HandleFunc(controllers.Home, controllers.HomeContoller)
 	log.Println("Starting server on port", config.AppPort)
 	log.Fatal(http.ListenAndServe(config.AppPort, nil))

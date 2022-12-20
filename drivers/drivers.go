@@ -3,9 +3,9 @@ package drivers
 import "math"
 
 type Driver struct {
-	Id     int     `json:"id"`
-	Name   string  `json:"name"`
-	Points int     `json:"points"`
+	Id     int     	`json:"id"`
+	Name   string  	`json:"name"`
+	Points int     	`json:"points"`
 	Price  int 		`json:"price"`
 }
 

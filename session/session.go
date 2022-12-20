@@ -25,7 +25,11 @@ func GetUserSession(r *http.Request) (users.User, error) {
 	if !found {
 		return users.User{}, errors.New("Session not found")
 	}
-	return users.User{Email: email}, nil
+	ds, err := svc.Db.GetTeam(users.User{Email: email})
+	if err != nil {
+		return users.User{}, err
+	}
+	return users.User{Email: email, Team: ds}, nil
 }
 
 func SetSessionCookie(email string, w http.ResponseWriter) error {
