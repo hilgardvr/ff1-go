@@ -4,6 +4,9 @@
         {{range .Team}}
             <li>{{.Name}}</li>
         {{ end }}
+        <form action="/repick-team" method="put">
+            <input type="submit" value="Repick team"/>
+        </form>
     {{ else }}
         <form action="/pick-team" method="get" >
             <input type="submit" value="Pick Team"/>

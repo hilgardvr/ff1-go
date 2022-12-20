@@ -35,6 +35,7 @@ func LoginTemplate(w http.ResponseWriter, user users.User) error {
 	return err
 }
 
+
 func HomeTemplate(w http.ResponseWriter, user users.User) error {
 	fmt.Println(home)
 	t, err := template.ParseFiles(base, home)

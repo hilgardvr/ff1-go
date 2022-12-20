@@ -321,7 +321,7 @@ func (n Neo4jRepo) GetTeam(user users.User) ([]drivers.Driver, error) {
 		})
 		record, err := result.Single()
 		if err != nil {
-			return users.User{}, err
+			return []drivers.Driver{}, err
 		}
 		team, found := record.Get("team")
 		if !found {
@@ -330,7 +330,7 @@ func (n Neo4jRepo) GetTeam(user users.User) ([]drivers.Driver, error) {
 		return team, nil
 	})
 	if err != nil {
-		return []drivers.Driver{}, err
+		return []drivers.Driver{}, nil
 	}
 	res, found := result.([]interface{})
 	if !found {
@@ -345,4 +345,26 @@ func (n Neo4jRepo) GetTeam(user users.User) ([]drivers.Driver, error) {
 		}
 	}
 	return drivers, err
+}
+
+func (n Neo4jRepo) DeleteTeam(user users.User) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)
+			detach delete t
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+		})
+		resultSummary, err := result.Consume()
+		if err != nil {
+			return []drivers.Driver{}, err
+		}
+		return resultSummary, err
+	})
+	return err
 }

@@ -76,6 +76,11 @@
                                 },
                                 body: JSON.stringify(this.data.selectedDrivers)
                             })
+                            .then((data, textSatus) => {
+                                console.log(data)
+                                console.log(textSatus)
+                                window.location.href = data.redirect;
+                            })
                         }
                     }
                 }
