@@ -11,13 +11,6 @@ import (
 	"net/http"
 )
 
-const PickTeam = "/pick-team"
-const RepickTeam = "/repick-team"
-const LoginCode = "/logincode"
-const Login = "/login"
-const Logout = "/logout"
-const Home = "/"
-
 func SaveController(w http.ResponseWriter, r *http.Request) {
 	user, err := session.GetUserSession(r)
 	if err != nil {
@@ -32,8 +25,6 @@ func SaveController(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Failed to upsert team:", err)
 	}
-	w.Header().Set("Content-Type", "text/html")
-	http.Redirect(w, r, Home, http.StatusSeeOther)
 }
 
 func PickTeamController(w http.ResponseWriter, r *http.Request) {

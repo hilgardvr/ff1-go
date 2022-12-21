@@ -8,6 +8,14 @@ import (
 	"net/http"
 )
 
+const PickTeam = "/pick-team"
+const RepickTeam = "/repick-team"
+const LoginCode = "/logincode"
+const Login = "/login"
+const Logout = "/logout"
+const Home = "/"
+
+
 func main() {
 	config, err := config.ReadConfig("config.json")
 	if err != nil {
@@ -17,15 +25,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc(controllers.LoginCode, controllers.LoginCodeHandler)
-	http.HandleFunc(controllers.Login, controllers.LoginHandler)
-	http.HandleFunc(controllers.Logout, controllers.LogoutHandler)
+	http.HandleFunc(LoginCode, controllers.LoginCodeHandler)
+	http.HandleFunc(Login, controllers.LoginHandler)
+	http.HandleFunc(Logout, controllers.LogoutHandler)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	http.HandleFunc("/api/budget", controllers.GetBudget)
 	http.HandleFunc("/api/save-team", controllers.SaveController)
-	http.HandleFunc(controllers.PickTeam, controllers.PickTeamController)
-	http.HandleFunc(controllers.RepickTeam, controllers.PickTeamController)
-	http.HandleFunc(controllers.Home, controllers.HomeContoller)
+	http.HandleFunc(PickTeam, controllers.PickTeamController)
+	http.HandleFunc(RepickTeam, controllers.PickTeamController)
+	http.HandleFunc(Home, controllers.HomeContoller)
 	log.Println("Starting server on port", config.AppPort)
 	log.Fatal(http.ListenAndServe(config.AppPort, nil))
 }
