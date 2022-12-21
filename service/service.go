@@ -68,3 +68,21 @@ func GetUserTeam(user users.User) (users.User, error) {
 		}
 	return user, nil
 }
+
+func GetAllDrivers() ([]drivers.Driver, error) {
+	allDrivers, err := svc.Db.GetDrivers()
+	return allDrivers, err
+}
+
+func ValidateLoginCode(email string, code string) bool {
+	return svc.Db.ValidateLoginCode(email, code)
+}
+
+func SendEmail(email string, subject string, body string) error {
+	err := svc.EmailService.SendEmail(email, "Your F1-Go login code", body)
+	return err
+}
+
+func SetLoginCode(email string, loginCode string) (string, error) {
+	return svc.Db.SetLoginCode(email, loginCode)
+}

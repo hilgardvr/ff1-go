@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"hilgardvr/ff1-go/helpers"
+	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
 	"hilgardvr/ff1-go/users"
 	"hilgardvr/ff1-go/view"
@@ -17,12 +18,12 @@ func LoginCodeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	emailAddress := r.Form.Get("email")
 	generatedCode := helpers.GenerateLoginCode()
-	newCode, err := svc.Db.SetLoginCode(emailAddress, generatedCode)
+	newCode, err := service.SetLoginCode(emailAddress, generatedCode)
 	if err != nil {
 		log.Println("Could not set login code")
-		svc.EmailService.SendEmail(emailAddress, "F1-Go login code", "Failed to generate a login code - pls try again")
+		service.SendEmail(emailAddress, "F1-Go login code", "Failed to generate a login code - pls try again")
 	} else {
-		svc.EmailService.SendEmail(emailAddress, "Your F1-Go login code", newCode)
+		service.SendEmail(emailAddress, "Your F1-Go login code", newCode)
 	}
 	user := users.User{Email: emailAddress}
 	err = view.LoginTemplate(w, user)
@@ -40,7 +41,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("code: ", code)
 	emailAddress := r.URL.Query().Get("email")
 	fmt.Println("email: ", emailAddress)
-	valid := svc.Db.ValidateLoginCode(emailAddress, code)
+	valid := service.ValidateLoginCode(emailAddress, code)
 	if valid {
 		fmt.Println("successfull code - removing")
 		err = session.SetSessionCookie(emailAddress, w)
@@ -55,11 +56,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatalln("template executing err:", err)
 		}
 		generatedCode := helpers.GenerateLoginCode()
-		newCode, err := svc.Db.SetLoginCode(emailAddress, generatedCode)
+		newCode, err := service.SetLoginCode(emailAddress, generatedCode)
 		if err != nil {
 			log.Println("Could not set login code")
 		} else {
-			svc.EmailService.SendEmail(emailAddress, "Your F1-Go login code", newCode)
+			err = service.SendEmail(emailAddress, "Your F1-Go login code", newCode)
 		}
 	}
 }

@@ -87,8 +87,8 @@ func createDriverData() ([]drivers.Driver, error) {
 	return allDrivers, nil
 }
 	
-func (n Neo4jRepo)GetDrivers() []drivers.Driver {
-	return driverData
+func (n Neo4jRepo)GetDrivers() ([]drivers.Driver, error) {
+	return driverData, nil
 }
 
 func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {

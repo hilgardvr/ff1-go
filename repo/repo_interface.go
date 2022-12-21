@@ -9,7 +9,7 @@ import (
 
 type Repo interface {
 	Init(*config.Config) error
-	GetDrivers() []drivers.Driver
+	GetDrivers() ([]drivers.Driver, error)
 	AddUser(users.User) (users.User, error)
 
 	SetLoginCode(email string, generatedCode string) (string, error)
