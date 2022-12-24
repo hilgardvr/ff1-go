@@ -5,7 +5,9 @@ import (
 	"errors"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
+	"hilgardvr/ff1-go/leagues"
 	"hilgardvr/ff1-go/users"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -366,5 +368,36 @@ func (n Neo4jRepo) DeleteTeam(user users.User) error {
 		}
 		return resultSummary, err
 	})
+	return err
+}
+
+func (n Neo4jRepo) SaveLeague(user users.User, leagueName string, passCode string) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	league, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})
+			merge (l:League {name: $leagueName, passCode: $passCode})
+			merge (u)-[:LEAGUE]->(l)
+			return l { .* } as league
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+			"leagueName": leagueName,
+			"passCode": passCode,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return leagues.League{}, err
+		}
+		league, found := record.Get("league")
+		if !found {
+			return leagues.League{}, errors.New("Could not find league in result")
+		}
+		return league, nil
+	})
+	log.Println("League created:", league)
 	return err
 }

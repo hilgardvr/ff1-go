@@ -14,6 +14,7 @@ var home = basePath + "home.html"
 var drivers = basePath + "drivers.html"
 var driversAlpine = basePath + "drivers_alpine.html"
 var base = basePath + "base.html"
+var league = basePath + "league.html"
 
 func LoginCodeTemplate(w http.ResponseWriter) error {
 	fmt.Println(getLoginCode)
@@ -43,6 +44,16 @@ func HomeTemplate(w http.ResponseWriter, user users.User) error {
 		return err
 	}
 	err = t.ExecuteTemplate(w, "base", user) 
+	return err
+}
+
+func LeagueTemplate(w http.ResponseWriter, user users.User) error {
+	fmt.Println(drivers)
+	t, err := template.ParseFiles(base, league)
+	if err != nil {
+		return err
+	}
+	err = t.ExecuteTemplate(w, "base", user)
 	return err
 }
 

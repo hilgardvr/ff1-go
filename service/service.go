@@ -86,3 +86,8 @@ func SendEmail(email string, subject string, body string) error {
 func SetLoginCode(email string, loginCode string) (string, error) {
 	return svc.Db.SetLoginCode(email, loginCode)
 }
+
+func SaveLeague(user users.User, leagueName string, passCode string) error {
+	err := svc.Db.SaveLeague(user, leagueName, passCode)
+	return err
+}

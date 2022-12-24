@@ -1,4 +1,9 @@
 {{ define "main" }}
+    <div>
+        <form action="/league" method="get">
+            <input type="submit" value="Join or Create a League"/>
+        </form>
+    </div>
     {{ if .Team }}
         <h4>Your current team:</h4>
         {{range .Team}}

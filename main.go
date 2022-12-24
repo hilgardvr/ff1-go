@@ -13,6 +13,7 @@ const RepickTeam = "/repick-team"
 const LoginCode = "/logincode"
 const Login = "/login"
 const Logout = "/logout"
+const League = "/league"
 const Home = "/"
 
 
@@ -28,11 +29,13 @@ func main() {
 	http.HandleFunc(LoginCode, controllers.LoginCodeHandler)
 	http.HandleFunc(Login, controllers.LoginHandler)
 	http.HandleFunc(Logout, controllers.LogoutHandler)
+	http.HandleFunc(League, controllers.LeagueController)
+	http.HandleFunc(PickTeam, controllers.PickTeamController)
+	http.HandleFunc(RepickTeam, controllers.PickTeamController)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	http.HandleFunc("/api/budget", controllers.GetBudget)
 	http.HandleFunc("/api/save-team", controllers.SaveController)
-	http.HandleFunc(PickTeam, controllers.PickTeamController)
-	http.HandleFunc(RepickTeam, controllers.PickTeamController)
+	http.HandleFunc("/api/create-league", controllers.CreateLeagueController)
 	http.HandleFunc(Home, controllers.HomeContoller)
 	log.Println("Starting server on port", config.AppPort)
 	log.Fatal(http.ListenAndServe(config.AppPort, nil))

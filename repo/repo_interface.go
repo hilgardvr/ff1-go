@@ -22,4 +22,6 @@ type Repo interface {
 	SaveTeam(users.User, []drivers.Driver) error
 	GetTeam(users.User) ([]drivers.Driver, error)
 	DeleteTeam(users.User) error
+
+	SaveLeague(user users.User, leagueName string, passCode string) error
 }

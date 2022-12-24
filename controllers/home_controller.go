@@ -1,31 +1,12 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
-	"hilgardvr/ff1-go/drivers"
-	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
 	"hilgardvr/ff1-go/view"
 	"log"
 	"net/http"
 )
-
-func SaveController(w http.ResponseWriter, r *http.Request) {
-	user, err := session.GetUserSession(r)
-	if err != nil {
-		log.Println("Failed to get user", err)
-	}
-	var ds []drivers.Driver
-	err = json.NewDecoder(r.Body).Decode(&ds)
-	if err != nil {
-		log.Println("Failed to parse drivers", err)
-	}
-	err = service.UpsertTeam(user, ds)
-	if err != nil {
-		log.Println("Failed to upsert team:", err)
-	}
-}
 
 func PickTeamController(w http.ResponseWriter, r *http.Request) {
 	user, err := session.GetUserSession(r)
@@ -59,4 +40,17 @@ func HomeContoller(w http.ResponseWriter, r *http.Request) {
 			log.Println("template executing err:", err)
 		}
 	}
+}
+
+func LeagueController(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		log.Println("Failed to get user", err)
+		return
+	}
+	err = view.LeagueTemplate(w, user)
+	if err != nil {
+		log.Println("League template executing err: ", err)
+	}
+
 }
