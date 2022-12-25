@@ -29,7 +29,8 @@ func GetUserSession(r *http.Request) (users.User, error) {
 	if err != nil {
 		return users.User{}, err
 	}
-	return users.User{Email: email, Team: ds}, nil
+	ls, err := svc.Db.GetLeagueForUser(users.User{Email: email})
+	return users.User{Email: email, Team: ds, Leagues: ls}, nil
 }
 
 func SetSessionCookie(email string, w http.ResponseWriter) error {

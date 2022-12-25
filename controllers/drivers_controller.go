@@ -11,7 +11,6 @@ import (
 	"net/http"
 )
 
-
 func GetDrivers(w http.ResponseWriter, r *http.Request) {
 	allDrivers, err := service.GetAllDrivers()
 	if err != nil {
@@ -26,7 +25,7 @@ func GetBudget(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(1000000)
 }
 
-func SaveController(w http.ResponseWriter, r *http.Request) {
+func SaveDriversController(w http.ResponseWriter, r *http.Request) {
 	user, err := session.GetUserSession(r)
 	if err != nil {
 		log.Println("Failed to get user", err)
@@ -40,7 +39,6 @@ func SaveController(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Failed to upsert team:", err)
 	}
-	// http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func CreateLeagueController(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +57,7 @@ func CreateLeagueController(w http.ResponseWriter, r *http.Request) {
 	err = service.SaveLeague(user, leagueName, generatedCode)
 	if err != nil {
 		log.Println("Could not save league:", err)
-		return 
+		return
 	}
 	sub := fmt.Sprintf("League passcode for %s", leagueName)
 	err = service.SendEmail(user.Email, sub, generatedCode)

@@ -3,6 +3,7 @@ package repo
 import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
+	"hilgardvr/ff1-go/leagues"
 	"hilgardvr/ff1-go/users"
 	"time"
 )
@@ -24,4 +25,5 @@ type Repo interface {
 	DeleteTeam(users.User) error
 
 	SaveLeague(user users.User, leagueName string, passCode string) error
+	GetLeagueForUser(user users.User) (leagues []leagues.League, err error)
 }

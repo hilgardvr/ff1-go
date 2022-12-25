@@ -14,6 +14,8 @@ var svc ServiceIO
 type ServiceIO struct {
 	Db repo.Repo
 	EmailService email.EmailService
+	//todo make toggles
+	SendEmail bool
 }
 
 func GetServiceIO() *ServiceIO {
@@ -34,6 +36,7 @@ func Init(config *config.Config) error {
 	svc = ServiceIO{
 		Db: r,
 		EmailService: e,
+		SendEmail: config.SendEmails,
 	}
 	return nil
 }
@@ -79,7 +82,12 @@ func ValidateLoginCode(email string, code string) bool {
 }
 
 func SendEmail(email string, subject string, body string) error {
-	err := svc.EmailService.SendEmail(email, "Your F1-Go login code", body)
+	var err error
+	if svc.SendEmail {
+		err = svc.EmailService.SendEmail(email, subject, body)
+	} else {
+		log.Println("Sending of emails toggled off")
+	}
 	return err
 }
 

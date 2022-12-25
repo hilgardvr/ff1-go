@@ -34,7 +34,7 @@ func main() {
 	http.HandleFunc(RepickTeam, controllers.PickTeamController)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	http.HandleFunc("/api/budget", controllers.GetBudget)
-	http.HandleFunc("/api/save-team", controllers.SaveController)
+	http.HandleFunc("/api/save-team", controllers.SaveDriversController)
 	http.HandleFunc("/api/create-league", controllers.CreateLeagueController)
 	http.HandleFunc(Home, controllers.HomeContoller)
 	log.Println("Starting server on port", config.AppPort)

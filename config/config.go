@@ -12,6 +12,7 @@ type Config struct {
     Neo4jPassword string `json:"NEO4J_PASSWORD"`
     EmailPassword string `json:"APP_PASSWORD"`
     EmailFrom string `json:"EMAIL_FROM"`
+	SendEmails bool `json:"SEND_EMAILS"`
 }
 
 func ReadConfig(path string) (*Config, error) {

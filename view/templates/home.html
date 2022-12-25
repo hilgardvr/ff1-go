@@ -1,4 +1,10 @@
 {{ define "main" }}
+    {{ if .Leagues }}
+        <h3>My Leagues</h3>
+        {{ range .Leagues }}
+            <li>{{ .Name }}</li>
+        {{ end }}
+    {{ end }}
     <div>
         <form action="/league" method="get">
             <input type="submit" value="Join or Create a League"/>
@@ -10,7 +16,7 @@
             <li>{{.Name}} <span>${{.Price}}</span></li>
         {{ end }}
         <form action="/repick-team" method="put">
-            <input type="submit" value="Repick team"/>
+            <input type="submit" value="Change team"/>
         </form>
     {{ else }}
         <form action="/pick-team" method="get" >

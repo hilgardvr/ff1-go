@@ -3,6 +3,7 @@ package repo
 import (
 	"encoding/csv"
 	"errors"
+	"fmt"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
@@ -400,4 +401,44 @@ func (n Neo4jRepo) SaveLeague(user users.User, leagueName string, passCode strin
 	})
 	log.Println("League created:", league)
 	return err
+}
+
+func (n Neo4jRepo) GetLeagueForUser(user users.User) ([]leagues.League, error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})-[:LEAGUE]-(l:League) 
+			return l { .* } as league
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+		})
+		// records, err := result.Collect()
+		if err != nil {
+			return []leagues.League{}, err
+		}
+		var ls []leagues.League
+		for result.Next() {
+			record := result.Record()
+			league, found := record.Get("league")
+			if found {
+				r := league.(map[string]interface{})
+				fmt.Println(r)
+				l := leagues.League{
+					Name: r["name"].(string),
+					PassCode: r["passCode"].(string),
+				}
+				ls = append(ls, l)
+			}
+		}
+		return ls, err
+	})
+	ls, found := result.([]leagues.League)
+	if !found {
+		return []leagues.League{}, errors.New("Could not find the team in db results")
+	}
+	return ls, err
 }
