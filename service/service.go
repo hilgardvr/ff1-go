@@ -95,7 +95,12 @@ func SetLoginCode(email string, loginCode string) (string, error) {
 	return svc.Db.SetLoginCode(email, loginCode)
 }
 
-func SaveLeague(user users.User, leagueName string, passCode string) error {
-	err := svc.Db.SaveLeague(user, leagueName, passCode)
+func SaveLeague(user users.User, leagueName string, passcode string) error {
+	err := svc.Db.SaveLeague(user, leagueName, passcode)
+	return err
+}
+
+func JoinLeague(user users.User, passcode string) error {
+	err := svc.Db.JoinLeague(user, passcode)
 	return err
 }

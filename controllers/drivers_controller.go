@@ -66,3 +66,26 @@ func CreateLeagueController(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func JoinLeagueController(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		log.Println("Failed to get user", err)
+		return
+	}
+	err = r.ParseForm()
+	if err != nil {
+		log.Println("Could not parse form")
+		return
+	}
+	leaguePasscode := r.Form.Get("league-passcode")
+	if leaguePasscode == "" {
+		log.Println("No league passcode provided")
+	} else {
+		err = service.JoinLeague(user, leaguePasscode)
+		if err != nil {
+			log.Println("Error joining league:", err)
+		}
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}

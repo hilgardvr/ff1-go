@@ -3,7 +3,6 @@ package repo
 import (
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
@@ -372,7 +371,7 @@ func (n Neo4jRepo) DeleteTeam(user users.User) error {
 	return err
 }
 
-func (n Neo4jRepo) SaveLeague(user users.User, leagueName string, passCode string) error {
+func (n Neo4jRepo) SaveLeague(user users.User, leagueName string, passcode string) error {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
@@ -380,14 +379,14 @@ func (n Neo4jRepo) SaveLeague(user users.User, leagueName string, passCode strin
 	league, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (u:User {email: $email})
-			merge (l:League {name: $leagueName, passCode: $passCode})
+			merge (l:League {name: $leagueName, passcode: $passcode})
 			merge (u)-[:LEAGUE]->(l)
 			return l { .* } as league
 		`,
 		map[string]interface{}{
 			"email": user.Email,
 			"leagueName": leagueName,
-			"passCode": passCode,
+			"passcode": passcode,
 		})
 		record, err := result.Single()
 		if err != nil {
@@ -426,10 +425,9 @@ func (n Neo4jRepo) GetLeagueForUser(user users.User) ([]leagues.League, error) {
 			league, found := record.Get("league")
 			if found {
 				r := league.(map[string]interface{})
-				fmt.Println(r)
 				l := leagues.League{
 					Name: r["name"].(string),
-					PassCode: r["passCode"].(string),
+					Passcode: r["passcode"].(string),
 				}
 				ls = append(ls, l)
 			}
@@ -441,4 +439,36 @@ func (n Neo4jRepo) GetLeagueForUser(user users.User) ([]leagues.League, error) {
 		return []leagues.League{}, errors.New("Could not find the team in db results")
 	}
 	return ls, err
+}
+
+func (n Neo4jRepo) JoinLeague(user users.User, passcode string) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email}) 
+			match (l:League {passcode: $passcode})
+			merge (u)-[:LEAGUE]->(l)
+			return l { .* } as league
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+			"passcode": passcode,
+		})
+		if err != nil {
+			return []leagues.League{}, err
+		}
+		record, err := result.Single()
+		if err != nil {
+			return leagues.League{}, err
+		}
+		league, found := record.Get("league")
+		if !found {
+			return leagues.League{}, errors.New("Could not find league in result")
+		}
+		return league, err
+	})
+	return err
 }

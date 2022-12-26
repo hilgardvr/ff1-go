@@ -1,7 +1,18 @@
 {{ define "main" }}
-    <div x-data="{create: false}">
-        <!-- <button @click="create = !create">Toggle</button> -->
-        <!-- <div x-show="create"> -->
+    <div>
+        <div>
+            <h3>Join Existing League</h3>
+            <h5>You will need the league passcode that is emailed to the league creator to join a league.</h3>
+            <form action="/api/join-league" mehtod="post">
+                <div>
+                    <label for="league-passcode">League Passcode:</label>
+                    <input type="text" name="league-passcode" id="league-passcode" required>
+                </div>
+                <div>
+                    <input type="submit" value="Join League">
+                </div>
+            </form>
+        </div>
         <div>
             <h3>Create League</h3>
             <h5>The league passcode will be emailed to you - you can share the passcode with others to join the league</h1>
