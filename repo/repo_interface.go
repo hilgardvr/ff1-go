@@ -27,4 +27,5 @@ type Repo interface {
 	SaveLeague(user users.User, leagueName string, passcode string) error
 	GetLeagueForUser(user users.User) (leagues []leagues.League, err error)
 	JoinLeague(user users.User, leaguePasscode string) error
+	GetLeagueMembers(leaguePasscode string) ([]users.User, error)
 }

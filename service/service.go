@@ -104,3 +104,7 @@ func JoinLeague(user users.User, passcode string) error {
 	err := svc.Db.JoinLeague(user, passcode)
 	return err
 }
+
+func GetLeagueUsers(passcode string) ([]users.User, error) {
+	return svc.Db.GetLeagueMembers(passcode)
+}

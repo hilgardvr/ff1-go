@@ -1,8 +1,9 @@
 {{ define "main" }}
     {{ if .Leagues }}
         <h3>My Leagues</h3>
+        {{ $baseUrl := "/display-league?" }}
         {{ range .Leagues }}
-            <li>{{ .Name }}</li>
+            <a href="{{ $baseUrl }}{{ .Name }}={{ .Passcode }}" >{{ .Name }}</a>
         {{ end }}
     {{ end }}
     <div>

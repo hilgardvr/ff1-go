@@ -191,7 +191,7 @@ func (n Neo4jRepo) ValidateLoginCode(email string, codeToTest string) bool {
 	defer func() {
 		session.Close()
 	}()
-	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+	_, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (u:User {email: $email, loginCode: $loginCode})
 			return u { .* } as user
@@ -415,7 +415,6 @@ func (n Neo4jRepo) GetLeagueForUser(user users.User) ([]leagues.League, error) {
 		map[string]interface{}{
 			"email": user.Email,
 		})
-		// records, err := result.Collect()
 		if err != nil {
 			return []leagues.League{}, err
 		}
@@ -471,4 +470,41 @@ func (n Neo4jRepo) JoinLeague(user users.User, passcode string) error {
 		return league, err
 	})
 	return err
+}
+
+func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (l:League {passcode: $passcode})-[:LEAGUE]-(u:User)
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"passcode": leaguePasscode,
+		})
+		if err != nil {
+			return []leagues.League{}, err
+		}
+		var us []users.User
+		for result.Next() {
+			record := result.Record()
+			user, found := record.Get("user")
+			if found {
+				r := user.(map[string]interface{})
+				u := users.User{
+					Email: r["email"].(string),
+				}
+				us = append(us, u)
+			}
+		}
+		return us, err
+	})
+	us, found := res.([]users.User)
+	if !found {
+		return []users.User{}, errors.New("Could not find the team in db results")
+	}
+	return us, err
 }

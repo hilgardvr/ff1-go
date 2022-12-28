@@ -37,6 +37,7 @@ func main() {
 	http.HandleFunc("/api/save-team", controllers.SaveDriversController)
 	http.HandleFunc("/api/create-league", controllers.CreateLeagueController)
 	http.HandleFunc("/api/join-league", controllers.JoinLeagueController)
+	http.HandleFunc("/display-league", controllers.DislayLeagueController)
 	http.HandleFunc(Home, controllers.HomeContoller)
 	log.Println("Starting server on port", config.AppPort)
 	log.Fatal(http.ListenAndServe(config.AppPort, nil))
