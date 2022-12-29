@@ -7,6 +7,7 @@ import (
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
 	"hilgardvr/ff1-go/users"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -20,6 +21,16 @@ type Neo4jRepo struct {
 }
 
 var driverData = []drivers.Driver{}
+
+func migrate() error {
+	fs, err := ioutil.ReadDir("./repo/data")
+	if err != nil {
+		log.Println("Error opening directory:", err)
+		return err
+	}
+	log.Println(fs)
+	return nil
+}
 
 func (n *Neo4jRepo)Init(config *config.Config) error {
 	driver, err := neo4j.NewDriver(
@@ -35,6 +46,10 @@ func (n *Neo4jRepo)Init(config *config.Config) error {
 	}
 	err = driver.VerifyConnectivity()
 
+	if err != nil {
+		return err
+	}
+	err = migrate()
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,7 @@
         <h3>My Leagues</h3>
         {{ $baseUrl := "/display-league?" }}
         {{ range .Leagues }}
-            <a href="{{ $baseUrl }}{{ .Name }}={{ .Passcode }}" >{{ .Name }}</a>
+            <a href="{{ $baseUrl }}{{ .Name }}={{ .Passcode }}" >{{ .Name }}</a><br/>
         {{ end }}
     {{ end }}
     <div>
