@@ -3,6 +3,7 @@ package repo
 import (
 	"encoding/csv"
 	"errors"
+	"fmt"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
@@ -10,7 +11,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -22,13 +26,42 @@ type Neo4jRepo struct {
 
 var driverData = []drivers.Driver{}
 
+const migrationFilePath = "./repo/data"
+
 func migrate() error {
-	fs, err := ioutil.ReadDir("./repo/data")
+	fs, err := ioutil.ReadDir(migrationFilePath)
 	if err != nil {
 		log.Println("Error opening directory:", err)
 		return err
 	}
-	log.Println(fs)
+	var cypherMigrtions []string
+	for _, n := range fs {
+		if strings.Contains(n.Name(), ".cypher") {
+			cypherMigrtions = append(cypherMigrtions, migrationFilePath + "/" + n.Name())
+		}
+	}
+		// b, err := ioutil.ReadFile()
+		// if err != nil {
+		// 	log.Println("Unable to read migration file:", err)
+		// 	return err
+		// }
+		// fmt.Println(string(b))
+	sort.Slice(cypherMigrtions, func(i, j int) bool {
+		is := filepath.Base(strings.Split(cypherMigrtions[i], "_")[0])
+		js := filepath.Base(strings.Split(cypherMigrtions[j], "_")[0])
+		ii, err := strconv.ParseInt(is, 10, 64)
+		if err != nil {
+			log.Println("Could not parse migration timestamp:", err)
+			// return err
+		}
+		ij, err := strconv.ParseInt(js, 10, 64)
+		if err != nil {
+			log.Println("Could not parse migration timestamp:", err)
+			// return err
+		}
+		return  ii < ij
+	})
+	fmt.Println(cypherMigrtions)
 	return nil
 }
 
