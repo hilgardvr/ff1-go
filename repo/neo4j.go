@@ -3,7 +3,6 @@ package repo
 import (
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
@@ -28,7 +27,7 @@ var driverData = []drivers.Driver{}
 
 const migrationFilePath = "./repo/data"
 
-func migrate() error {
+func migrate(d neo4j.Driver) error {
 	fs, err := ioutil.ReadDir(migrationFilePath)
 	if err != nil {
 		log.Println("Error opening directory:", err)
@@ -40,29 +39,45 @@ func migrate() error {
 			cypherMigrtions = append(cypherMigrtions, migrationFilePath + "/" + n.Name())
 		}
 	}
-		// b, err := ioutil.ReadFile()
-		// if err != nil {
-		// 	log.Println("Unable to read migration file:", err)
-		// 	return err
-		// }
-		// fmt.Println(string(b))
 	sort.Slice(cypherMigrtions, func(i, j int) bool {
 		is := filepath.Base(strings.Split(cypherMigrtions[i], "_")[0])
 		js := filepath.Base(strings.Split(cypherMigrtions[j], "_")[0])
 		ii, err := strconv.ParseInt(is, 10, 64)
 		if err != nil {
 			log.Println("Could not parse migration timestamp:", err)
-			// return err
 		}
 		ij, err := strconv.ParseInt(js, 10, 64)
 		if err != nil {
 			log.Println("Could not parse migration timestamp:", err)
-			// return err
 		}
 		return  ii < ij
 	})
-	fmt.Println(cypherMigrtions)
+	executeMigrations(d, cypherMigrtions)
 	return nil
+}
+
+func executeMigrations(d neo4j.Driver, paths []string) error {
+	session := d.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		for _, p := range paths {
+			b, err := ioutil.ReadFile(p)
+			if err != nil {
+				log.Println("Unable to read migration file:", err)
+				return nil, err
+			}
+			_, err = tx.Run(string(b), map[string]interface{}{})
+			if err != nil {
+				log.Println("Error migrating:", p, err)
+				return nil, err
+			}
+			log.Println("Migration successful for: ", p)
+		}
+		return nil, nil
+	})
+	return err
 }
 
 func (n *Neo4jRepo)Init(config *config.Config) error {
@@ -82,7 +97,7 @@ func (n *Neo4jRepo)Init(config *config.Config) error {
 	if err != nil {
 		return err
 	}
-	err = migrate()
+	err = migrate(driver)
 	if err != nil {
 		return err
 	}

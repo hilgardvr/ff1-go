@@ -1,39 +1,39 @@
-merge (c:Constructor {name: "Red Bull")})
-merge (:Driver {name: "Max", surname: "Verstappen"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Sergio", surname: "Perez"})-[:RACES_FOR]->(c);
+merge (red:Constructor {name: "Red Bull"})
+merge (:Driver {name: "Max", surname: "Verstappen"})-[:RACES_FOR]->(red)
+merge (:Driver {name: "Sergio", surname: "Perez"})-[:RACES_FOR]->(red)
 
-merge (c:Constructor {name: "Ferrari"})
-merge (:Driver {name: "Charles", surname: "Leclerc"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Carlos", surname: "Sainz"})-[:RACES_FOR]->(c);
+merge (ferrari:Constructor {name: "Ferrari"})
+merge (:Driver {name: "Charles", surname: "Leclerc"})-[:RACES_FOR]->(ferrari)
+merge (:Driver {name: "Carlos", surname: "Sainz"})-[:RACES_FOR]->(ferrari)
 
-merge (c:Constructor {name: "Mercedes"})
-merge (:Driver {name: "Lewis", surname: "Hamilton"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "George", surname: "Russell"})-[:RACES_FOR]->(c);
+merge (mercedes:Constructor {name: "Mercedes"})
+merge (:Driver {name: "Lewis", surname: "Hamilton"})-[:RACES_FOR]->(mercedes)
+merge (:Driver {name: "George", surname: "Russell"})-[:RACES_FOR]->(mercedes)
 
-merge (c:Constructor {name: "Alpine"})
-merge (:Driver {name: "Pierre", surname: "Gasly"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Esteban", surname: "Ocon"})-[:RACES_FOR]->(c);
+merge (alpine:Constructor {name: "Alpine"})
+merge (:Driver {name: "Pierre", surname: "Gasly"})-[:RACES_FOR]->(alpine)
+merge (:Driver {name: "Esteban", surname: "Ocon"})-[:RACES_FOR]->(alpine)
 
-merge (c:Constructor {name: "McLaren"})
-merge (:Driver {name: "Lando", surname: "Norris"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Oscar", surname: "Piastri"})-[:RACES_FOR]->(c);
+merge (mclaren:Constructor {name: "McLaren"})
+merge (:Driver {name: "Lando", surname: "Norris"})-[:RACES_FOR]->(mclaren)
+merge (:Driver {name: "Oscar", surname: "Piastri"})-[:RACES_FOR]->(mclaren)
 
-merge (c:Constructor {name: "Alfa Romeo"})
-merge (:Driver {name: "Zhou", surname: "Guanyu"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Valtteri", surname: "Bottas"})-[:RACES_FOR]->(c);
+merge (alfa:Constructor {name: "Alfa Romeo"})
+merge (:Driver {name: "Zhou", surname: "Guanyu"})-[:RACES_FOR]->(alfa)
+merge (:Driver {name: "Valtteri", surname: "Bottas"})-[:RACES_FOR]->(alfa)
 
-merge (c:Constructor {name: "Aston Martin"})
-merge (:Driver {name: "Fernando", surname: "Alonso"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Lance", surname: "Stroll"})-[:RACES_FOR]->(c);
+merge (aston:Constructor {name: "Aston Martin"})
+merge (:Driver {name: "Fernando", surname: "Alonso"})-[:RACES_FOR]->(aston)
+merge (:Driver {name: "Lance", surname: "Stroll"})-[:RACES_FOR]->(aston)
 
-merge (c:Constructor {name: "Haas"})
-merge (:Driver {name: "Kevin", surname: "Magnussen"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Nico", surname: "Hulkenberg"})-[:RACES_FOR]->(c);
+merge (haas:Constructor {name: "Haas"})
+merge (:Driver {name: "Kevin", surname: "Magnussen"})-[:RACES_FOR]->(haas)
+merge (:Driver {name: "Nico", surname: "Hulkenberg"})-[:RACES_FOR]->(haas)
 
-merge (c:Constructor {name: "AlphaTauri"})
-merge (:Driver {name: "Yuki", surname: "Tsunoda"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Nyck", surname: "de Vries"})-[:RACES_FOR]->(c);
+merge (alphatauri:Constructor {name: "AlphaTauri"})
+merge (:Driver {name: "Yuki", surname: "Tsunoda"})-[:RACES_FOR]->(alphatauri)
+merge (:Driver {name: "Nyck", surname: "de Vries"})-[:RACES_FOR]->(alphatauri)
 
-merge (c:Constructor {name: "Williams"})
-merge (:Driver {name: "Logan", surname: "Sargeant"})-[:RACES_FOR]->(c)
-merge (:Driver {name: "Alex", surname: "Albon"})-[:RACES_FOR]->(c);
+merge (williams:Constructor {name: "Williams"})
+merge (:Driver {name: "Logan", surname: "Sargeant"})-[:RACES_FOR]->(williams)
+merge (:Driver {name: "Alex", surname: "Albon"})-[:RACES_FOR]->(williams)
