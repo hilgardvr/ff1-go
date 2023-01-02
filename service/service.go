@@ -73,7 +73,7 @@ func GetUserTeam(user users.User) (users.User, error) {
 }
 
 func GetAllDrivers() ([]drivers.Driver, error) {
-	allDrivers, err := svc.Db.GetDrivers()
+	allDrivers, err := svc.Db.GetDrivers(2022)
 	return allDrivers, err
 }
 

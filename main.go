@@ -16,7 +16,6 @@ const Logout = "/logout"
 const League = "/league"
 const Home = "/"
 
-
 func main() {
 	config, err := config.ReadConfig("config.json")
 	if err != nil {

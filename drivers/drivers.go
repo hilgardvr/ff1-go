@@ -3,10 +3,11 @@ package drivers
 import "math"
 
 type Driver struct {
-	Id     int     	`json:"id"`
+	Id     int64     	`json:"id"`
 	Name   string  	`json:"name"`
-	Points int     	`json:"points"`
-	Price  int 		`json:"price"`
+	Surname string  	`json:"surname"`
+	Points int64     	`json:"points"`
+	Price  int64 		`json:"price"`
 }
 
 const budget float64 = 1000000.0
@@ -22,6 +23,7 @@ func AssignPrices(drivers []Driver) []Driver {
 		createdDrivers = append(createdDrivers, Driver{
 			Id:     driver.Id,
 			Name:   driver.Name,
+			Surname: driver.Surname,
 			Points: driver.Points,
 			Price:  price,
 		})
@@ -44,20 +46,20 @@ func ValidateTeam(drivers []Driver) bool {
 }
 
 
-func sumAllDriverPoints(drivers []Driver) int {
-	var totalPoints int
+func sumAllDriverPoints(drivers []Driver) int64 {
+	var totalPoints int64
 	for _, driver := range drivers {
 		totalPoints += driver.Points
 	}
 	return totalPoints
 }
 
-func calcPrice(driver Driver, totalPoints int) int {
+func calcPrice(driver Driver, totalPoints int64) int64 {
 	if totalPoints == 0 {
 		totalPoints++
 	}
 	driverPointsShare := float64(driver.Points) / float64(totalPoints)
 	price := (driverPointsShare*budget + basePrice) * adjustmentFactor
 	price = math.Round(price)
-	return int(price)
+	return int64(price)
 }

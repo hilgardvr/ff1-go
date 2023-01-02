@@ -1,7 +1,6 @@
 package repo
 
 import (
-	"encoding/csv"
 	"errors"
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
@@ -9,7 +8,6 @@ import (
 	"hilgardvr/ff1-go/users"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -102,58 +100,95 @@ func (n *Neo4jRepo)Init(config *config.Config) error {
 		return err
 	}
 	n.driver = driver
-	driverData, err = createDriverData()
+	driverData, err = createDriverData(driver)
 	return err
 }
 
-func readDriverData() ([][]string, error) {
-	path, err := getDriverFilePath()
-	if err != nil {
-		return [][]string{}, err
-	}
-	f, err := os.Open(path)
-	if err != nil {
-		return [][]string{}, err
-	}
-	defer f.Close()
-	csvReader := csv.NewReader(f)
-	data, err := csvReader.ReadAll()
-	return data, err
-}
+// func readDriverData() ([][]string, error) {
+// 	path, err := getDriverFilePath()
+// 	if err != nil {
+// 		return [][]string{}, err
+// 	}
+// 	f, err := os.Open(path)
+// 	if err != nil {
+// 		return [][]string{}, err
+// 	}
+// 	defer f.Close()
+// 	csvReader := csv.NewReader(f)
+// 	data, err := csvReader.ReadAll()
+// 	return data, err
+// }
 
-func createDriverData() ([]drivers.Driver, error) {
-	driverData, err := readDriverData()
+func createDriverData(neo4jDriver neo4j.Driver) ([]drivers.Driver, error) {
+	r := Neo4jRepo{
+		driver: neo4jDriver,
+	}
+	
+	ds, err := r.GetDrivers(2022)
+	if err != nil {
+		log.Println("Failed to get driver data:", err)
+		return []drivers.Driver{}, err
+	}
+	pricedDrivers := drivers.AssignPrices(ds)
+	return pricedDrivers, nil
+}
+	
+func (n Neo4jRepo)GetDrivers(season int) (neo4jDriver []drivers.Driver, err error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (d:Driver)-[:HAS_RACE]->(r:Race {season: $season}) 
+			return ID(d) as id, d.name as name, d.surname as surname, sum(r.points) as points
+		`,
+		map[string]interface{}{
+			"season": season,
+		})
+		if err != nil {
+			return []drivers.Driver{}, err
+		}
+		var ls []drivers.Driver
+		for result.Next() {
+			record := result.Record()
+			id, found := record.Get("id")
+			if !found {
+				log.Println("Could not find driver id")
+				continue
+			}
+			name, found := record.Get("name")
+			if !found {
+				log.Println("Could not find driver name")
+				continue
+			}
+			surname, found := record.Get("surname")
+			if !found {
+				log.Println("Could not find driver surname")
+				continue
+			}
+			points, found := record.Get("points")
+			if !found {
+				log.Println("Could not find driver points")
+				continue
+			}
+			driver := drivers.Driver{
+				Id: id.(int64),
+				Name: name.(string),
+				Surname: surname.(string),
+				Points: points.(int64),
+			}
+			ls = append(ls, driver)
+		}
+
+		return ls, err
+	})
 	if err != nil {
 		return []drivers.Driver{}, err
 	}
-	var allDrivers []drivers.Driver
-	for _, line := range driverData {
-		if len(line) != 3 {
-			return allDrivers, errors.New("Driver data unexpected format")
-		}
-		id, err := strconv.Atoi(line[0])
-		if err != nil {
-			return allDrivers, err
-		}
-		name := line[1]
-		points, err := strconv.Atoi(line[2])
-		if err != nil {
-			return allDrivers, err
-		}
-		driver := drivers.Driver{
-			Id:     id,
-			Name:   name,
-			Points: points,
-			Price:  0,
-		}
-		allDrivers = append(allDrivers, driver)
-	}
-	allDrivers = drivers.AssignPrices(allDrivers)
-	return allDrivers, nil
-}
-	
-func (n Neo4jRepo)GetDrivers() ([]drivers.Driver, error) {
-	return driverData, nil
+	ds := result.([]drivers.Driver)
+	ds = drivers.AssignPrices(ds)
+	return ds, err
 }
 
 func (n Neo4jRepo)AddUser(user users.User) (users.User, error) {
@@ -343,7 +378,7 @@ func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver) e
 	defer func() {
 		session.Close()
 	}()
-	var drivers []int
+	var drivers []int64
 	for _, d := range selectedDrivers {
 		drivers = append(drivers, d.Id)
 	}
@@ -404,7 +439,7 @@ func (n Neo4jRepo) GetTeam(user users.User) ([]drivers.Driver, error) {
 	var drivers []drivers.Driver
 	for _, driverId := range res {
 		for _, d := range driverData {
-			if d.Id == int(driverId.(int64)) {
+			if d.Id == driverId.(int64) {
 				drivers = append(drivers, d)
 			}
 		}
@@ -496,6 +531,9 @@ func (n Neo4jRepo) GetLeagueForUser(user users.User) ([]leagues.League, error) {
 		}
 		return ls, err
 	})
+	if err != nil {
+		return []leagues.League{}, err
+	}
 	ls, found := result.([]leagues.League)
 	if !found {
 		return []leagues.League{}, errors.New("Could not find the team in db results")
