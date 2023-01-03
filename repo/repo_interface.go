@@ -10,8 +10,10 @@ import (
 
 type Repo interface {
 	Init(*config.Config) error
-	GetDrivers(int) ([]drivers.Driver, error)
 	AddUser(users.User) (users.User, error)
+
+	GetDriversBySeason(int) ([]drivers.Driver, error)
+	GetDriversById([]int64) ([]drivers.Driver, error)
 
 	SetLoginCode(email string, generatedCode string) (string, error)
 	DeleteLoginCode(email string) error
