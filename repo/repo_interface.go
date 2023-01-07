@@ -13,14 +13,14 @@ type Repo interface {
 	AddUser(users.User) (users.User, error)
 
 	GetDriversBySeason(int) ([]drivers.Driver, error)
-	GetDriversById([]int64) ([]drivers.Driver, error)
+	// GetDriversByIdForSeason([]int64, int) ([]drivers.Driver, error)
 
 	SetLoginCode(email string, generatedCode string) (string, error)
 	DeleteLoginCode(email string) error
 	ValidateLoginCode(email string, codeToTest string) bool
 
 	SaveSession(email, uuid string, duration time.Duration) error
-	GetSession(uuid string) (string, bool)
+	GetSession(uuid string) (users.User, bool)
 
 	SaveTeam(users.User, []drivers.Driver) error
 	GetTeam(users.User) ([]drivers.Driver, error)

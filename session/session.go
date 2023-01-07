@@ -21,16 +21,18 @@ func GetUserSession(r *http.Request) (users.User, error) {
 	if err != nil {
 		return users.User{}, err
 	}
-	email, found := svc.Db.GetSession(uuid.Value)
+	user, found := svc.Db.GetSession(uuid.Value)
 	if !found {
 		return users.User{}, errors.New("Session not found")
 	}
-	ds, err := svc.Db.GetTeam(users.User{Email: email})
+	ds, err := svc.Db.GetTeam(user)
 	if err != nil {
 		return users.User{}, err
 	}
-	ls, err := svc.Db.GetLeagueForUser(users.User{Email: email})
-	return users.User{Email: email, Team: ds, Leagues: ls}, nil
+	ls, err := svc.Db.GetLeagueForUser(user)
+	user.Team = ds
+	user.Leagues = ls
+	return user, nil
 }
 
 func SetSessionCookie(email string, w http.ResponseWriter) error {

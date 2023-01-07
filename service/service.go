@@ -72,8 +72,8 @@ func GetUserTeam(user users.User) (users.User, error) {
 	return user, nil
 }
 
-func GetAllDrivers() ([]drivers.Driver, error) {
-	allDrivers, err := svc.Db.GetDriversBySeason(2022)
+func GetAllDriversForSeason(season int) ([]drivers.Driver, error) {
+	allDrivers, err := svc.Db.GetDriversBySeason(season)
 	return allDrivers, err
 }
 

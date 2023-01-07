@@ -9,4 +9,5 @@ type User struct {
 	Email string
 	Team []drivers.Driver
 	Leagues []leagues.League
+	IsAdmin bool
 }

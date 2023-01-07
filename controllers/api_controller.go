@@ -12,7 +12,7 @@ import (
 )
 
 func GetDrivers(w http.ResponseWriter, r *http.Request) {
-	allDrivers, err := service.GetAllDrivers()
+	allDrivers, err := service.GetAllDriversForSeason(2022)
 	if err != nil {
 		log.Println("Unable to load drivers:", err)
 	}

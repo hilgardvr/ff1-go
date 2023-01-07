@@ -3,6 +3,7 @@ package view
 import (
 	"fmt"
 	"hilgardvr/ff1-go/users"
+	"hilgardvr/ff1-go/drivers"
 	"html/template"
 	"net/http"
 )
@@ -11,10 +12,11 @@ var basePath = "./view/templates/"
 var getLoginCode = basePath + "get_login_code.html"
 var login = basePath + "login.html"
 var home = basePath + "home.html"
-var drivers = basePath + "drivers.html"
+var driversPath = basePath + "drivers.html"
 var base = basePath + "base.html"
 var league = basePath + "league.html"
 var displayLeague = basePath + "display-league.html"
+var adminPage = basePath + "admin_page.html"
 
 func LoginCodeTemplate(w http.ResponseWriter) error {
 	fmt.Println(getLoginCode)
@@ -48,7 +50,7 @@ func HomeTemplate(w http.ResponseWriter, user users.User) error {
 }
 
 func LeagueTemplate(w http.ResponseWriter, user users.User) error {
-	fmt.Println(drivers)
+	fmt.Println(driversPath)
 	t, err := template.ParseFiles(base, league)
 	if err != nil {
 		return err
@@ -58,12 +60,33 @@ func LeagueTemplate(w http.ResponseWriter, user users.User) error {
 }
 
 func DriversTemplate(w http.ResponseWriter, user users.User) error {
-	fmt.Println(drivers)
-	t, err := template.ParseFiles(base, drivers)
+	fmt.Println(driversPath)
+	t, err := template.ParseFiles(base, driversPath)
 	if err != nil {
 		return err
 	}
 	err = t.ExecuteTemplate(w, "base", user)
+	return err
+}
+
+func AdminTemplate(w http.ResponseWriter, user users.User, season int, ds []drivers.Driver) error {
+	fmt.Println(adminPage)
+	t, err := template.ParseFiles(base, adminPage)
+	if err != nil {
+		return err
+	}
+	templData := struct {
+		Email string
+		IsAdmin bool
+		Season int
+		Drivers []drivers.Driver
+	} {
+		Email: user.Email,
+		IsAdmin: user.IsAdmin,
+		Season: season,
+		Drivers: ds,
+	}
+	err = t.ExecuteTemplate(w, "base", templData)
 	return err
 }
 

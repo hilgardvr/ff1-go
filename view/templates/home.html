@@ -1,4 +1,10 @@
 {{ define "main" }}
+    {{ if .IsAdmin }}
+        <h4>Go to Admin Page</h4>
+        <form action="/admin/admin-page" method="get">
+            <input type="submit" value="Admin Page"/>
+        </form>
+    {{ end}}
     {{ if .Leagues }}
         <h3>My Leagues</h3>
         {{ $baseUrl := "/display-league?" }}
