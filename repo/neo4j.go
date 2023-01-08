@@ -5,6 +5,7 @@ import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
+	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/users"
 	"io/ioutil"
 	"log"
@@ -651,4 +652,76 @@ func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error)
 		return []users.User{}, errors.New("Could not find the team in db results")
 	}
 	return us, err
+}
+
+func (n Neo4jRepo) GetAllRaces() ([]races.Race, error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (r:Race) return r { .* } as race
+		`, map[string]interface{}{})
+		if err != nil {
+			return []races.Race{}, err
+		}
+		var rs []races.Race
+		for result.Next() {
+			record := result.Record()
+			race, found := record.Get("race")
+			if found {
+				r := race.(map[string]interface{})
+				u := races.Race{
+					Race: r["race"].(int64),
+					Season: r["season"].(int64),
+				}
+				rs = append(rs, u)
+			}
+		}
+		return rs, err
+	})
+	rs, found := res.([]races.Race)
+	if !found {
+		return []races.Race{}, errors.New("Could not find the team in db results")
+	}
+	return rs, err
+}
+
+func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.Race) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		_, err := tx.Run(`
+			merge (r:Race {season: $season, race: $race})
+		`,
+		map[string]interface{}{
+			"season": race.Season,
+			"race": race.Race,
+		})
+		if err != nil {
+			return "", err
+		}
+		for _, v := range driverWithPoints {
+			_, err := tx.Run(`
+				match (r:Race {season: $season, race: $race})
+				match (d:Driver)
+				where ID(d) = $id
+				merge (d)-[:HAS_RACE {points: $points}]-(r)
+			`,
+			map[string]interface{}{
+				"season": race.Season,
+				"race": race.Race,
+				"id": v.Id,
+				"points": v.Points,
+			})
+			if err != nil {
+				return "", err
+			}
+		}
+		return "", nil
+	})
+	return err
 }

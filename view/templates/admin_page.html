@@ -1,9 +1,14 @@
 {{ define "main" }}
     <h4>Enter points for each driver for race: <span>{{ .Season }} - {{ .Race }}</span></h4>
-    {{ range .Drivers }}
-        <span>{{ .Name }} {{ .Surname }}</span> 
-        <form action="/repick-team" method="put">
-            <input type="submit" value="Change team"/>
-        </form>
-    {{ end }}
+    <form action="/admin/update-data" method="post">
+        {{ range .Drivers }}
+            <div>
+                <label for="driver"><span>{{ .Name }} {{ .Surname }}</span></label>
+                <input type="number" name="{{ .Id }}" id="{{ .Id }}">
+            </div>
+        {{ end }}
+        <div>
+            <input type="submit" value="Submit Race Data">
+        </div>
+    </form>
 {{ end }}

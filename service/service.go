@@ -4,9 +4,11 @@ import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/email"
+	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/repo"
 	"hilgardvr/ff1-go/users"
 	"log"
+	"sort"
 )
 
 var svc ServiceIO
@@ -74,7 +76,37 @@ func GetUserTeam(user users.User) (users.User, error) {
 
 func GetAllDriversForSeason(season int) ([]drivers.Driver, error) {
 	allDrivers, err := svc.Db.GetDriversBySeason(season)
+	if err != nil {
+		return []drivers.Driver{}, err
+	}
+	sort.Slice(allDrivers, func(i, j int) bool {
+		return allDrivers[i].Points > allDrivers[j].Points
+	})
 	return allDrivers, err
+}
+
+func GetLatestRace() (races.Race, error) {
+	allRaces, err := GetAllRaces()
+	if err != nil {
+		return races.Race{}, err
+	}
+	sort.Slice(allRaces, func(i, j int) bool {
+		if allRaces[i].Season > allRaces[j].Season {
+			return true
+		} else {
+			if allRaces[i].Season == allRaces[j].Season {
+				return allRaces[i].Race > allRaces[j].Race
+			} else {
+				return false
+			}
+		}
+	})
+	return allRaces[0], nil
+}
+
+func GetAllRaces() ([]races.Race, error) {
+	allRaces, err := svc.Db.GetAllRaces()
+	return allRaces, err
 }
 
 func ValidateLoginCode(email string, code string) bool {
@@ -107,4 +139,14 @@ func JoinLeague(user users.User, passcode string) error {
 
 func GetLeagueUsers(passcode string) ([]users.User, error) {
 	return svc.Db.GetLeagueMembers(passcode)
+}
+
+func CreateRacePoints(racePoints []drivers.Driver) error {
+	race, err := GetLatestRace()
+	if err != nil {
+		log.Println("Error getting latest race:", err)
+		return err
+	}
+	race.Race += 1
+	return svc.Db.CreateNewRace(racePoints, race)
 }

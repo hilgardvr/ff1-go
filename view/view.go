@@ -2,8 +2,9 @@ package view
 
 import (
 	"fmt"
-	"hilgardvr/ff1-go/users"
 	"hilgardvr/ff1-go/drivers"
+	"hilgardvr/ff1-go/races"
+	"hilgardvr/ff1-go/users"
 	"html/template"
 	"net/http"
 )
@@ -69,7 +70,7 @@ func DriversTemplate(w http.ResponseWriter, user users.User) error {
 	return err
 }
 
-func AdminTemplate(w http.ResponseWriter, user users.User, season int, ds []drivers.Driver) error {
+func AdminTemplate(w http.ResponseWriter, user users.User, race races.Race, ds []drivers.Driver) error {
 	fmt.Println(adminPage)
 	t, err := template.ParseFiles(base, adminPage)
 	if err != nil {
@@ -78,13 +79,15 @@ func AdminTemplate(w http.ResponseWriter, user users.User, season int, ds []driv
 	templData := struct {
 		Email string
 		IsAdmin bool
-		Season int
+		Season int64
 		Drivers []drivers.Driver
+		Race int64
 	} {
 		Email: user.Email,
 		IsAdmin: user.IsAdmin,
-		Season: season,
+		Season: race.Season,
 		Drivers: ds,
+		Race: race.Race + 1,
 	}
 	err = t.ExecuteTemplate(w, "base", templData)
 	return err

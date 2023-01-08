@@ -4,6 +4,7 @@ import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
+	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/users"
 	"time"
 )
@@ -13,7 +14,6 @@ type Repo interface {
 	AddUser(users.User) (users.User, error)
 
 	GetDriversBySeason(int) ([]drivers.Driver, error)
-	// GetDriversByIdForSeason([]int64, int) ([]drivers.Driver, error)
 
 	SetLoginCode(email string, generatedCode string) (string, error)
 	DeleteLoginCode(email string) error
@@ -30,4 +30,7 @@ type Repo interface {
 	GetLeagueForUser(user users.User) (leagues []leagues.League, err error)
 	JoinLeague(user users.User, leaguePasscode string) error
 	GetLeagueMembers(leaguePasscode string) ([]users.User, error)
+
+	GetAllRaces() ([]races.Race, error)
+	CreateNewRace([]drivers.Driver, races.Race) error
 }
