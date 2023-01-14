@@ -47,12 +47,16 @@ func Init(config *config.Config) error {
 func UpsertTeam(user users.User, ds []drivers.Driver) error {
 	valid := drivers.ValidateTeam(ds)
 	if valid {
-		err := svc.Db.DeleteTeam(user)
+		latesstRace, err := GetLatestRace()
+		if err != nil {
+			return nil
+		}
+		err = svc.Db.DeleteTeam(user, latesstRace)
 		if err != nil {
 			log.Println("Failed to delete team for user: ", user, err)
 			return err
 		}
-		err = svc.Db.SaveTeam(user, ds)
+		err = svc.Db.SaveTeam(user, ds, latesstRace)
 		if err != nil {
 			log.Println("Failed to save team for user: ", user, err)
 			return err
@@ -62,7 +66,12 @@ func UpsertTeam(user users.User, ds []drivers.Driver) error {
 }
 
 func GetUserTeam(user users.User) (users.User, error) {
-	team, err := svc.Db.GetTeam(user)
+	latestRace, err := GetLatestRace()
+	if err != nil {
+		log.Println("Failed to fetch latest race: ", user, err)
+		return users.User{}, err
+	}
+	team, err := svc.Db.GetTeam(user, latestRace)
 	if err != nil {
 		log.Println("Failed to fetch user team for user: ", user, err)
 		return users.User{}, err

@@ -22,9 +22,9 @@ type Repo interface {
 	SaveSession(email, uuid string, duration time.Duration) error
 	GetSession(uuid string) (users.User, bool)
 
-	SaveTeam(users.User, []drivers.Driver) error
-	GetTeam(users.User) ([]drivers.Driver, error)
-	DeleteTeam(users.User) error
+	SaveTeam(users.User, []drivers.Driver, races.Race) error
+	GetTeam(user users.User, race races.Race) ([]drivers.Driver, error)
+	DeleteTeam(users.User, races.Race) error
 
 	SaveLeague(user users.User, leagueName string, passcode string) error
 	GetLeagueForUser(user users.User) (leagues []leagues.League, err error)
