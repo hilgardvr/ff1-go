@@ -12,9 +12,15 @@ import (
 )
 
 func GetDrivers(w http.ResponseWriter, r *http.Request) {
-	allDrivers, err := service.GetAllDriversForSeason(2022)
+	latestRace, err := service.GetLatestRace()
+	if err != nil {
+		log.Println("Unable to get latest race:", err)
+		return
+	}
+	allDrivers, err := service.GetAllDriversForSeason(int(latestRace.Season))
 	if err != nil {
 		log.Println("Unable to load drivers:", err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(allDrivers)

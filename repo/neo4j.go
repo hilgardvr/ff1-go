@@ -652,6 +652,7 @@ func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.R
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		_, err := tx.Run(`
 			merge (r:Race {season: $season, race: $race})
+			return r
 		`,
 		map[string]interface{}{
 			"season": race.Season,
@@ -674,6 +675,7 @@ func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.R
 				"points": v.Points,
 			})
 			if err != nil {
+				log.Println("Error adding drivers to race:", err)
 				return "", err
 			}
 		}

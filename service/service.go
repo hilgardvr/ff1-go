@@ -156,6 +156,5 @@ func CreateRacePoints(racePoints []drivers.Driver) error {
 		log.Println("Error getting latest race:", err)
 		return err
 	}
-	race.Race += 1
 	return svc.Db.CreateNewRace(racePoints, race)
 }

@@ -87,7 +87,7 @@ func AdminTemplate(w http.ResponseWriter, user users.User, race races.Race, ds [
 		IsAdmin: user.IsAdmin,
 		Season: race.Season,
 		Drivers: ds,
-		Race: race.Race + 1,
+		Race: race.Race,
 	}
 	err = t.ExecuteTemplate(w, "base", templData)
 	return err

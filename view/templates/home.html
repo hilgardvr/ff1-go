@@ -18,9 +18,9 @@
         </form>
     </div>
     {{ if .Team }}
-        <h4>Your current team:</h4>
+        <h4>My current team:</h4>
         {{range .Team}}
-            <li>{{.Name}} <span>${{.Price}}</span></li>
+            <li>{{.Name}} {{.Surname}}</li>
         {{ end }}
         <form action="/repick-team" method="put">
             <input type="submit" value="Change team"/>

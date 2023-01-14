@@ -10,4 +10,5 @@ type User struct {
 	Team []drivers.Driver
 	Leagues []leagues.League
 	IsAdmin bool
+	SeasonPoints int
 }
