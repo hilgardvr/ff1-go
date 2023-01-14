@@ -147,7 +147,12 @@ func JoinLeague(user users.User, passcode string) error {
 }
 
 func GetLeagueUsers(passcode string) ([]users.User, error) {
-	return svc.Db.GetLeagueMembers(passcode)
+	latestRace, err := GetLatestRace()
+	if err != nil {
+		log.Println("Could not get latest race:", err)
+		return []users.User{}, err
+	}
+	return svc.Db.GetLeagueMembers(passcode, int(latestRace.Season))
 }
 
 func CreateRacePoints(racePoints []drivers.Driver) error {

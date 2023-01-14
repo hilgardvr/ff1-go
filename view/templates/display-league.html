@@ -2,7 +2,7 @@
     <div>
         <h3>{{ .LeagueName }}</h3>
         {{ range .Users }}
-            <li>{{ .Email }} </li>
+            <li>{{ .Email }} <span>{{ .SeasonPoints }}</span> </li>
         {{ end }}
     </div>
 {{ end }}

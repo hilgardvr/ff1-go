@@ -101,8 +101,6 @@ func (n *Neo4jRepo)Init(config *config.Config) error {
 	n.driver = driver
 	return err
 }
-
-	
 func (n Neo4jRepo)GetDriversBySeason(season int) ([]drivers.Driver,  error) {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
@@ -573,7 +571,7 @@ func (n Neo4jRepo) JoinLeague(user users.User, passcode string) error {
 	return err
 }
 
-func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error) {
+func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string, season int) ([]users.User, error) {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
@@ -581,10 +579,15 @@ func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error)
 	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (l:League {passcode: $passcode})-[:LEAGUE]-(u:User)
-			return u { .* } as user
+			match (u)-[ht:HAS_TEAM]-(t:Team)-[fr:FOR_RACE]-(r:Race {season: $season})
+			match (d:Driver)-[hr:HAS_RACE]-(r)
+			where (t)-[:HAS_DRIVER]-(d)
+			with sum(hr.points) as p, u as u
+			return u {. *, points: p} as user
 		`,
 		map[string]interface{}{
 			"passcode": leaguePasscode,
+			"season": season,
 		})
 		if err != nil {
 			return []leagues.League{}, err
@@ -597,6 +600,7 @@ func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error)
 				r := user.(map[string]interface{})
 				u := users.User{
 					Email: r["email"].(string),
+					SeasonPoints: int(r["points"].(int64)),
 				}
 				us = append(us, u)
 			}
