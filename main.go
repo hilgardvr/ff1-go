@@ -32,7 +32,6 @@ func main() {
 	http.HandleFunc(PickTeam, controllers.PickTeamController)
 	http.HandleFunc(RepickTeam, controllers.PickTeamController)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
-	http.HandleFunc("/api/budget", controllers.GetBudget)
 	http.HandleFunc("/api/save-team", controllers.SaveDriversController)
 	http.HandleFunc("/api/create-league", controllers.CreateLeagueController)
 	http.HandleFunc("/api/join-league", controllers.JoinLeagueController)

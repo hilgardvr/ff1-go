@@ -21,7 +21,17 @@ func PickTeamController(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		fmt.Println("session found for email:", user.Email)
-		err = view.DriversTemplate(w, user)
+		latestRace, err := service.GetLatestRace()
+		if err != nil {
+			log.Println("Could not get latest race:", err)
+			return 
+		}
+		allDrivers, err := service.GetAllDriversForSeason(int(latestRace.Season))
+		if err != nil {
+			log.Println("Could not get all drivers by season:", err)
+			return 
+		}
+		err = view.DriversTemplate(w, user, allDrivers)
 		if err != nil {
 			log.Println("template executing err:", err)
 		}

@@ -389,12 +389,18 @@ func (n Neo4jRepo) GetTeam(user users.User, race races.Race) ([]drivers.Driver, 
 	defer func() {
 		session.Close()
 	}()
+	allDrivers, err := n.GetDriversBySeason(int(race.Season))
+	if err != nil {
+		log.Println("COuld not get all drivers by season:", err)
+		return []drivers.Driver{}, err
+	}
+			// return ID(d) as id, d.name as name, d.surname as surname, sum(hr.points) as points
 	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)-[:HAS_DRIVER]-(d:Driver)
 			where (t)-[:FOR_RACE]->(:Race {season: $season, race: $race})
 			match (d)-[hr:HAS_RACE]-(:Race)
-			return ID(d) as id, d.name as name, d.surname as surname, sum(hr.points) as points
+			return ID(d) as id, sum(hr.points) as points
 		`,
 		map[string]interface{}{
 			"email": user.Email,
@@ -409,28 +415,11 @@ func (n Neo4jRepo) GetTeam(user users.User, race races.Race) ([]drivers.Driver, 
 				log.Println("Could not find driver id")
 				continue
 			}
-			name, found := record.Get("name")
-			if !found {
-				log.Println("Could not find driver name")
-				continue
+			for _, v := range allDrivers {
+				if v.Id == id.(int64) {
+					ls = append(ls, v)
+				}
 			}
-			surname, found := record.Get("surname")
-			if !found {
-				log.Println("Could not find driver surname")
-				continue
-			}
-			points, found := record.Get("points")
-			if !found {
-				log.Println("Could not find driver points")
-				continue
-			}
-			driver := drivers.Driver{
-				Id: id.(int64),
-				Name: name.(string),
-				Surname: surname.(string),
-				Points: points.(int64),
-			}
-			ls = append(ls, driver)
 		}
 
 		return ls, err

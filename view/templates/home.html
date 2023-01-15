@@ -18,7 +18,7 @@
         </form>
     </div>
     {{ if .Team }}
-        <h4>My current team:</h4>
+        <h3>My team for next race:</h3>
         {{range .Team}}
             <li>{{.Name}} {{.Surname}}</li>
         {{ end }}
@@ -26,6 +26,7 @@
             <input type="submit" value="Change team"/>
         </form>
     {{ else }}
+        <h3>Pick team for next race:</h3>
         <form action="/pick-team" method="get" >
             <input type="submit" value="Pick Team"/>
         </form>

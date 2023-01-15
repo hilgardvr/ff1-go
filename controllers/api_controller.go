@@ -26,10 +26,6 @@ func GetDrivers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(allDrivers)
 }
 
-func GetBudget(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(1000000)
-}
 
 func SaveDriversController(w http.ResponseWriter, r *http.Request) {
 	user, err := session.GetUserSession(r)

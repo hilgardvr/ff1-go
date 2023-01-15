@@ -1,12 +1,14 @@
 package view
 
 import (
+	"encoding/json"
 	"fmt"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/users"
 	"html/template"
 	"net/http"
+	"sort"
 )
 
 var basePath = "./view/templates/"
@@ -60,13 +62,50 @@ func LeagueTemplate(w http.ResponseWriter, user users.User) error {
 	return err
 }
 
-func DriversTemplate(w http.ResponseWriter, user users.User) error {
+func DriversTemplate(w http.ResponseWriter, user users.User, allDrivers []drivers.Driver) error {
 	fmt.Println(driversPath)
 	t, err := template.ParseFiles(base, driversPath)
 	if err != nil {
 		return err
 	}
-	err = t.ExecuteTemplate(w, "base", user)
+	var filteredDrivers []drivers.Driver
+	for _, ad := range allDrivers {
+		found := false
+		for _, ud := range user.Team {
+			if ud.Id == ad.Id {
+				found = true
+			}
+		}
+		if !found {
+			filteredDrivers = append(filteredDrivers, ad)
+		}
+	}
+	userTeam := []drivers.Driver{}
+	if user.Team != nil {
+		userTeam = user.Team
+	}
+	data := struct {
+		Team []drivers.Driver
+		Budget int64
+		AllDrivers []drivers.Driver
+	} {
+		Team: userTeam,
+		Budget: 1000000,
+		AllDrivers: filteredDrivers,
+	}
+	json, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	templData := struct {
+		Email string 
+		TemplData string
+	} {
+		Email: user.Email,
+		TemplData: string(json),
+	}
+	err = t.ExecuteTemplate(w, "base", templData)
+	
 	return err
 }
 
@@ -99,6 +138,9 @@ func DisplayLeagueTemplate(w http.ResponseWriter, u users.User, leagueName strin
 	if err != nil {
 		return err
 	}
+	sort.Slice(us, func(i int, j int) bool {
+		return us[i].SeasonPoints > us[j].SeasonPoints
+	})
 	tempalteData := struct {
 		Email string
 		Users []users.User
