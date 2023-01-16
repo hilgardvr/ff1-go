@@ -568,8 +568,8 @@ func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string, season int) ([]users.
 	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (l:League {passcode: $passcode})-[:LEAGUE]-(u:User)
-			match (u)-[ht:HAS_TEAM]-(t:Team)-[fr:FOR_RACE]-(r:Race {season: $season})
-			match (d:Driver)-[hr:HAS_RACE]-(r)
+			optional match (u)-[ht:HAS_TEAM]-(t:Team)-[fr:FOR_RACE]-(r:Race {season: $season})
+			optional match (d:Driver)-[hr:HAS_RACE]-(r)
 			where (t)-[:HAS_DRIVER]-(d)
 			with sum(hr.points) as p, u as u
 			return u {. *, points: p} as user
