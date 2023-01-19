@@ -71,7 +71,7 @@ func GetUserTeam(user users.User) (users.User, error) {
 		log.Println("Failed to fetch latest race: ", user, err)
 		return users.User{}, err
 	}
-	team, err := svc.Db.GetTeam(user, latestRace)
+	team, err := svc.Db.GetUserTeamForRace(user, latestRace)
 	if err != nil {
 		log.Println("Failed to fetch user team for user: ", user, err)
 		return users.User{}, err
@@ -111,6 +111,31 @@ func GetLatestRace() (races.Race, error) {
 		}
 	})
 	return allRaces[0], nil
+}
+
+func GetAllCompletedRaces() ([]races.Race, error) {
+	allCompletedRaces, err := svc.Db.GetAllCompletedRaces()
+	return allCompletedRaces, err
+}
+
+func GetLatestCompletedRace() (races.Race, error) {
+	allCompleted, err := GetAllCompletedRaces()
+	if err != nil {
+		log.Println("could not get all completed races")
+		return races.Race{}, err
+	}
+	sort.Slice(allCompleted, func(i, j int) bool {
+		if allCompleted[i].Season > allCompleted[j].Season {
+			return true
+		} else {
+			if allCompleted[i].Season == allCompleted[j].Season {
+				return allCompleted[i].Race > allCompleted[j].Race
+			} else {
+				return false
+			}
+		}
+	})
+	return allCompleted[0], nil
 }
 
 func GetAllRaces() ([]races.Race, error) {
@@ -162,4 +187,28 @@ func CreateRacePoints(racePoints []drivers.Driver) error {
 		return err
 	}
 	return svc.Db.CreateNewRace(racePoints, race)
+}
+
+func GetUserRacePoints(user users.User, race races.Race) (races.RacePoints, error) {
+	ut, err := svc.Db.GetUserTeamForRace(user, race)
+	if err != nil {
+		log.Println("Error getting user team for race:", err)
+		return races.RacePoints{}, err
+	}
+	rp, err := svc.Db.GetRacePoints(race)
+	if err != nil {
+		log.Println("Error getting latest race:", err)
+		return races.RacePoints{}, err
+	}
+	var teamWithPoints []drivers.Driver
+	var total int64
+	for _, v := range ut {
+		for _, r := range rp.Drivers {
+			if v.Id == r.Id {
+				teamWithPoints = append(teamWithPoints, r)
+				total += r.Points
+			}
+		}
+	}
+	return races.RacePoints{Race: race, Drivers: teamWithPoints, Total: total}, err
 }

@@ -29,7 +29,7 @@ func GetUserSession(r *http.Request) (users.User, error) {
 	if err != nil {
 		return users.User{}, err
 	}
-	ds, err := svc.Db.GetTeam(user, latestRace)
+	ds, err := svc.Db.GetUserTeamForRace(user, latestRace)
 	if err != nil {
 		return users.User{}, err
 	}

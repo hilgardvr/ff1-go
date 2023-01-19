@@ -1,14 +1,22 @@
 {{ define "main" }}
-    {{ if .IsAdmin }}
+    {{ if .User.IsAdmin }}
         <h4>Go to Admin Page</h4>
         <form action="/admin/admin-page" method="get">
             <input type="submit" value="Admin Page"/>
         </form>
     {{ end}}
-    {{ if .Leagues }}
+    {{ if .RacePoints.Drivers }}
+        <h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b></span></h3>
+        {{ range .RacePoints.Drivers }}
+            <div>{{.Name}} {{.Surname}} {{.Points}}</div>
+        {{ end }}
+    {{ else }}
+        <h4>No team selected for <span>{{ .RacePoints.Race.Race }}</span></h4>
+    {{ end}}
+    {{ if .User.Leagues }}
         <h3>My Leagues</h3>
         {{ $baseUrl := "/display-league?" }}
-        {{ range .Leagues }}
+        {{ range .User.Leagues }}
             <a href="{{ $baseUrl }}{{ .Name }}={{ .Passcode }}" >{{ .Name }}</a><br/>
         {{ end }}
     {{ end }}
@@ -17,9 +25,9 @@
             <input type="submit" value="Join or Create a League"/>
         </form>
     </div>
-    {{ if .Team }}
+    {{ if .User.Team }}
         <h3>My team for next race:</h3>
-        {{range .Team}}
+        {{range .User.Team}}
             <li>{{.Name}} {{.Surname}}</li>
         {{ end }}
         <form action="/repick-team" method="put">

@@ -48,7 +48,17 @@ func HomeContoller(w http.ResponseWriter, r *http.Request) {
 			log.Println("template executing err:", err)
 		}
 	} else {
-		err = view.HomeTemplate(w, user)
+		latestCompleted, err := service.GetLatestCompletedRace()
+		if err != nil {
+			log.Println("could not get latest race:", err)
+			return
+		}
+		latestUserRacePoints, err := service.GetUserRacePoints(user, latestCompleted)
+		if err != nil {
+			log.Println("could not get latest race points:", err)
+			return
+		}
+		err = view.HomeTemplate(w, user, latestUserRacePoints)
 		if err != nil {
 			log.Println("template executing err:", err)
 		}

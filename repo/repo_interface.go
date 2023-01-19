@@ -23,7 +23,7 @@ type Repo interface {
 	GetSession(uuid string) (users.User, bool)
 
 	SaveTeam(users.User, []drivers.Driver, races.Race) error
-	GetTeam(user users.User, race races.Race) ([]drivers.Driver, error)
+	GetUserTeamForRace(user users.User, race races.Race) ([]drivers.Driver, error)
 	DeleteTeam(users.User, races.Race) error
 
 	SaveLeague(user users.User, leagueName string, passcode string) error
@@ -32,5 +32,8 @@ type Repo interface {
 	GetLeagueMembers(leaguePasscode string, season int) ([]users.User, error)
 
 	GetAllRaces() ([]races.Race, error)
+	GetAllCompletedRaces() ([]races.Race, error)
 	CreateNewRace([]drivers.Driver, races.Race) error
+
+	GetRacePoints(races.Race) (races.RacePoints, error)
 }
