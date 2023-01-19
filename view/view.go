@@ -20,6 +20,7 @@ var base = basePath + "base.html"
 var league = basePath + "league.html"
 var displayLeague = basePath + "display-league.html"
 var adminPage = basePath + "admin_page.html"
+var racePointsPage = basePath + "race-points.html"
 
 func LoginCodeTemplate(w http.ResponseWriter) error {
 	fmt.Println(getLoginCode)
@@ -45,6 +46,25 @@ func LoginTemplate(w http.ResponseWriter, user users.User) error {
 func HomeTemplate(w http.ResponseWriter, user users.User, latestRacePoints races.RacePoints) error {
 	fmt.Println(home)
 	t, err := template.ParseFiles(base, home)
+	if err != nil {
+		return err
+	}
+	tmpData := struct {
+		Email string
+		User users.User
+		RacePoints races.RacePoints
+	} {
+		Email: user.Email,
+		User: user,
+		RacePoints: latestRacePoints,
+	}
+	err = t.ExecuteTemplate(w, "base", tmpData) 
+	return err
+}
+
+func RacePointsTemplate(w http.ResponseWriter, user users.User, latestRacePoints races.RacePoints) error {
+	fmt.Println(home)
+	t, err := template.ParseFiles(base, racePointsPage)
 	if err != nil {
 		return err
 	}

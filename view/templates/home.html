@@ -6,13 +6,24 @@
         </form>
     {{ end}}
     {{ if .RacePoints.Drivers }}
-        <h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b></span></h3>
-        {{ range .RacePoints.Drivers }}
-            <div>{{.Name}} {{.Surname}} {{.Points}}</div>
-        {{ end }}
+        <a href="/display-points"><h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b></span></h3></a>
     {{ else }}
         <h4>No team selected for <span>{{ .RacePoints.Race.Race }}</span></h4>
     {{ end}}
+    {{ if .User.Team }}
+        <h3>My team for next race:</h3>
+        {{range .User.Team}}
+            <li>{{.Name}} {{.Surname}}</li>
+        {{ end }}
+        <form action="/repick-team" method="put">
+            <input type="submit" value="Change team"/>
+        </form>
+    {{ else }}
+        <h3>No Team Selected For Next Race</h3>
+        <form action="/pick-team" method="get" >
+            <input type="submit" value="Pick Now"/>
+        </form>
+    {{ end }}
     {{ if .User.Leagues }}
         <h3>My Leagues</h3>
         {{ $baseUrl := "/display-league?" }}
@@ -25,18 +36,4 @@
             <input type="submit" value="Join or Create a League"/>
         </form>
     </div>
-    {{ if .User.Team }}
-        <h3>My team for next race:</h3>
-        {{range .User.Team}}
-            <li>{{.Name}} {{.Surname}}</li>
-        {{ end }}
-        <form action="/repick-team" method="put">
-            <input type="submit" value="Change team"/>
-        </form>
-    {{ else }}
-        <h3>Pick team for next race:</h3>
-        <form action="/pick-team" method="get" >
-            <input type="submit" value="Pick Team"/>
-        </form>
-    {{ end }}
 {{ end }}

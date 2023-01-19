@@ -1,0 +1,10 @@
+{{ define "main" }}
+    {{ if .RacePoints.Drivers }}
+        <h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b></span></h3>
+        {{ range .RacePoints.Drivers }}
+            <div>{{.Name}} {{.Surname}} {{.Points}}</div>
+        {{ end }}
+    {{ else }}
+        <h4>No team selected for <span>{{ .RacePoints.Race.Race }}</span></h4>
+    {{ end}}
+{{ end }}
