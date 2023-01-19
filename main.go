@@ -36,6 +36,7 @@ func main() {
 	http.HandleFunc("/api/create-league", controllers.CreateLeagueController)
 	http.HandleFunc("/api/join-league", controllers.JoinLeagueController)
 	http.HandleFunc("/display-league", controllers.DislayLeagueController)
+	http.HandleFunc("/display-leagues", controllers.DisplayLeaguesController)
 	http.HandleFunc("/display-points", controllers.DisplayRacePoints)
 	http.HandleFunc("/admin/admin-page", controllers.CreateRacePoints)
 	http.HandleFunc("/admin/update-data", controllers.UpdateRaceData)

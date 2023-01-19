@@ -11,8 +11,14 @@
             <h4>Fantasy F1 Game</h4>
             {{ if .Email }}
                 <h4>You are logged in as {{.Email}}</h4>
+                <form action="/" method="get">
+                    <input type="submit" value="Home"/>
+                </form>
                 <form action="/display-points" method="get">
                     <input type="submit" value="Points"/>
+                </form>
+                <form action="/display-leagues" method="get">
+                    <input type="submit" value="Leagues"/>
                 </form>
                 <form action="/logout" method="delete">
                     <input type="submit" value="Logout"/>

@@ -120,6 +120,32 @@ func DislayLeagueController(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func DisplayLeaguesController(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		fmt.Println("no session found")
+		err = view.LoginCodeTemplate(w)
+		if err != nil {
+			log.Println("template executing err:", err)
+		}
+	} else {
+		latestCompleted, err := service.GetLatestCompletedRace()
+		if err != nil {
+			log.Println("could not get latest race:", err)
+			return
+		}
+		latestUserRacePoints, err := service.GetUserRacePoints(user, latestCompleted)
+		if err != nil {
+			log.Println("could not get latest race points:", err)
+			return
+		}
+		err = view.DisplayLeagues(w, user, latestUserRacePoints)
+		if err != nil {
+			log.Println("template executing err:", err)
+		}
+	}
+}
+
 func DisplayRacePoints(w http.ResponseWriter, r *http.Request) {
 	user, err := session.GetUserSession(r)
 	if err != nil {

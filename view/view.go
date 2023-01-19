@@ -19,6 +19,7 @@ var driversPath = basePath + "drivers.html"
 var base = basePath + "base.html"
 var league = basePath + "league.html"
 var displayLeague = basePath + "display-league.html"
+var displayLeagues = basePath + "display-leagues.html"
 var adminPage = basePath + "admin_page.html"
 var racePointsPage = basePath + "race-points.html"
 
@@ -61,6 +62,26 @@ func HomeTemplate(w http.ResponseWriter, user users.User, latestRacePoints races
 	err = t.ExecuteTemplate(w, "base", tmpData) 
 	return err
 }
+
+func DisplayLeagues(w http.ResponseWriter, user users.User, latestRacePoints races.RacePoints) error {
+	fmt.Println(home)
+	t, err := template.ParseFiles(base, displayLeagues)
+	if err != nil {
+		return err
+	}
+	tmpData := struct {
+		Email string
+		User users.User
+		RacePoints races.RacePoints
+	} {
+		Email: user.Email,
+		User: user,
+		RacePoints: latestRacePoints,
+	}
+	err = t.ExecuteTemplate(w, "base", tmpData) 
+	return err
+}
+
 
 func RacePointsTemplate(w http.ResponseWriter, user users.User, latestRacePoints races.RacePoints) error {
 	fmt.Println(home)
