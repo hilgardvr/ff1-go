@@ -5,6 +5,10 @@
             <div>{{.Name}} {{.Surname}} {{.Points}}</div>
         {{ end }}
     {{ else }}
-        <h4>No team selected for <span>{{ .RacePoints.Race.Race }}</span></h4>
+        {{ if gt .RacePoints.Race.Race 0 }}
+            <h4>No Team Selected For Race: <span>{{ .RacePoints.Race.Race }}</span></h4>
+        {{ else }}
+            <h4>No Races For The Season Yet</h4>
+        {{ end }}
     {{ end}}
 {{ end }}

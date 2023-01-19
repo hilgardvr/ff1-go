@@ -8,7 +8,9 @@
     {{ if .RacePoints.Drivers }}
         <a href="/display-points"><h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b></span></h3></a>
     {{ else }}
-        <h4>No team selected for <span>{{ .RacePoints.Race.Race }}</span></h4>
+        {{ if gt .RacePoints.Race.Race 0}}
+            <h4>No Team Selected For Previous Race: <span>{{ .RacePoints.Race.Race }}</span></h4>
+        {{ end }}
     {{ end}}
     {{ if .User.Team }}
         <h3>My team for next race:</h3>
