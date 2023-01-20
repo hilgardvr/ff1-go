@@ -138,9 +138,46 @@ func GetLatestCompletedRace() (races.Race, error) {
 	return allCompleted[0], nil
 }
 
+func SortRacesDesc(races []races.Race) (race []races.Race) {
+	sort.Slice(races, func(i, j int) bool {
+		if races[i].Season > races[j].Season {
+			return true
+		} else {
+			if races[i].Season == races[j].Season {
+				return races[i].Race > races[j].Race
+			} else {
+				return false
+			}
+		}
+	})
+	return races
+}
+
 func GetAllRaces() ([]races.Race, error) {
 	allRaces, err := svc.Db.GetAllRaces()
 	return allRaces, err
+}
+
+func GetAllRacesForCurrentSeason() ([]races.Race, error) {
+	l, err := GetLatestRace()
+	if err != nil {
+		return []races.Race{}, err
+	}
+	return GetAllRacesForSeason(l.Season)
+}
+
+func GetAllRacesForSeason(season int64) ([]races.Race, error) {
+	allRaces, err := GetAllRaces()
+	if err != nil {
+		return allRaces, err
+	}
+	var seasonRaces []races.Race
+	for _, v := range allRaces {
+		if v.Season == season {
+			seasonRaces = append(seasonRaces, v)
+		}
+	}
+	return SortRacesDesc(seasonRaces), err
 }
 
 func ValidateLoginCode(email string, code string) bool {

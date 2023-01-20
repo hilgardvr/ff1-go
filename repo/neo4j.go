@@ -398,7 +398,7 @@ func (n Neo4jRepo) GetUserTeamForRace(user users.User, race races.Race) ([]drive
 		result, err := tx.Run(`
 			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)-[:HAS_DRIVER]-(d:Driver)
 			where (t)-[:FOR_RACE]->(:Race {season: $season, race: $race})
-			match (d)-[hr:HAS_RACE]-(:Race)
+			optional match (d)-[hr:HAS_RACE]-(:Race)
 			return ID(d) as id, sum(hr.points) as points
 		`,
 		map[string]interface{}{
@@ -566,8 +566,9 @@ func (n Neo4jRepo) GetRacePoints(race races.Race) (races.RacePoints, error) {
 	}()
 	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
-			match (d:Driver)-[hr:HAS_RACE]-(r:Race {season: $season, race: $race})
-			return d {.*, driverPoints: hr.points, driverId: ID(d)} as driver
+			match (d:Driver)
+			optional match (d)-[hr:HAS_RACE]-(r:Race {season: $season, race: $race})
+			return d {.*, driverId: ID(d)} as driver, hr.points as driverPoints
 		`,
 		map[string]interface{}{
 			"season": race.Season,
@@ -579,6 +580,13 @@ func (n Neo4jRepo) GetRacePoints(race races.Race) (races.RacePoints, error) {
 		var dr []drivers.Driver
 		for result.Next() {
 			record := result.Record()
+			var points int64
+			pointsRec, found := record.Get("driverPoints")
+			if found && pointsRec != nil {
+				points = pointsRec.(int64)
+			} else {
+				points = 0
+			}
 			driver, found := record.Get("driver")
 			if found {
 				rec := driver.(map[string]interface{})
@@ -586,7 +594,7 @@ func (n Neo4jRepo) GetRacePoints(race races.Race) (races.RacePoints, error) {
 					Id: rec["driverId"].(int64),
 					Name: rec["name"].(string),
 					Surname: rec["surname"].(string),
-					Points: rec["driverPoints"].(int64),
+					Points: points,
 				}
 				dr = append(dr, d)
 			}

@@ -1,14 +1,15 @@
 {{ define "main" }}
-    {{ if .RacePoints.Drivers }}
-        <h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b></span></h3>
-        {{ range .RacePoints.Drivers }}
-            <div>{{.Name}} {{.Surname}} {{.Points}}</div>
-        {{ end }}
-    {{ else }}
-        {{ if gt .RacePoints.Race.Race 0 }}
-            <h4>No Team Selected For Race: <span>{{ .RacePoints.Race.Race }}</span></h4>
-        {{ else }}
-            <h4>No Races For The Season Yet</h4>
+    {{ range .RacePoints }}
+        {{ if gt .Race.Race 0 }}
+            {{ if .Drivers }}
+                <h3>Total Points For Race <span>{{ .Race.Race }}: <b>{{ .Total }}</b></span></h3>
+                {{ range .Drivers }}
+                    <div>{{.Name}} {{.Surname}} {{.Points}}</div>
+                {{ end }}
+            {{ else }}
+                <h3>Total Points For Race <span>{{ .Race.Race }}: <b>0</b></span></h3>
+                <div>No Team Selected For Race: <span>{{ .Race.Race }}</span></div>
+            {{ end }}
         {{ end }}
     {{ end}}
 {{ end }}

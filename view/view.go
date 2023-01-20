@@ -83,7 +83,7 @@ func DisplayLeagues(w http.ResponseWriter, user users.User, latestRacePoints rac
 }
 
 
-func RacePointsTemplate(w http.ResponseWriter, user users.User, latestRacePoints races.RacePoints) error {
+func RacePointsTemplate(w http.ResponseWriter, user users.User, seasonRaces []races.RacePoints) error {
 	fmt.Println(home)
 	t, err := template.ParseFiles(base, racePointsPage)
 	if err != nil {
@@ -92,11 +92,11 @@ func RacePointsTemplate(w http.ResponseWriter, user users.User, latestRacePoints
 	tmpData := struct {
 		Email string
 		User users.User
-		RacePoints races.RacePoints
+		RacePoints []races.RacePoints
 	} {
 		Email: user.Email,
 		User: user,
-		RacePoints: latestRacePoints,
+		RacePoints: seasonRaces,
 	}
 	err = t.ExecuteTemplate(w, "base", tmpData) 
 	return err

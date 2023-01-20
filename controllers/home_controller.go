@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
 	"hilgardvr/ff1-go/view"
@@ -155,17 +156,25 @@ func DisplayRacePoints(w http.ResponseWriter, r *http.Request) {
 			log.Println("template executing err:", err)
 		}
 	} else {
-		latestCompleted, err := service.GetLatestCompletedRace()
+		allRaces, err := service.GetAllRacesForCurrentSeason()
 		if err != nil {
-			log.Println("could not get latest race:", err)
+			log.Println("could not get all races:", err)
 			return
 		}
-		latestUserRacePoints, err := service.GetUserRacePoints(user, latestCompleted)
+		var racePoints []races.RacePoints
+		for _, v := range allRaces {
+			points, err := service.GetUserRacePoints(user, v)
+			if err != nil {
+				log.Println("could not get user races points:", err)
+				return
+			}
+			racePoints = append(racePoints, points)
+		}
 		if err != nil {
 			log.Println("could not get latest race points:", err)
 			return
 		}
-		err = view.RacePointsTemplate(w, user, latestUserRacePoints)
+		err = view.RacePointsTemplate(w, user, racePoints)
 		if err != nil {
 			log.Println("template executing err:", err)
 		}
