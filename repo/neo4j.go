@@ -332,17 +332,30 @@ func (n Neo4jRepo) GetSession(uuid string) (users.User, bool) {
 	if err != nil {
 		return users.User{}, false
 	}
-	email, found := result.(map[string]interface{})["email"] 
+	res := result.(map[string]interface{})
+	email, found := res["email"] 
 	if !found {
 		return users.User{}, false
 	}
-	isAdmin, found := result.(map[string]interface{})["isadmin"] 
+	isAdmin, found := res["isadmin"] 
 	if !found {
 		isAdmin = false
-		found = true
+	}
+	teamName, found := res["teamName"] 
+	if !found {
+		teamName = ""
+	}
+	teamPriciple, found := res["teamPrinciple"] 
+	if !found {
+		teamPriciple = ""
 	}
 	n.DeleteLoginCode(email.(string))
-	return users.User{Email: email.(string), IsAdmin: isAdmin.(bool)}, found
+	return users.User{
+		Email: email.(string), 
+		IsAdmin: isAdmin.(bool),
+		TeamName: teamName.(string),
+		TeamPriciple: teamPriciple.(string),
+	}, true
 }
 
 func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver, race races.Race) error {
@@ -755,6 +768,36 @@ func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.R
 			}
 		}
 		return "", nil
+	})
+	return err
+}
+
+func (n Neo4jRepo) SaveUserTeamDetails(user users.User) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})
+			set u.teamName = $teamName
+			set u.teamPrinciple = $teamPrinciple
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+			"teamName": user.TeamName,
+			"teamPrinciple": user.TeamPriciple,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
 	})
 	return err
 }

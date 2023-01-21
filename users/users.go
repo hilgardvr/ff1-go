@@ -8,6 +8,8 @@ import (
 
 type User struct {
 	Email string
+	TeamName string
+	TeamPriciple string
 	Team []drivers.Driver
 	Leagues []leagues.League
 	IsAdmin bool

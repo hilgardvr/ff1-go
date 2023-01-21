@@ -208,6 +208,10 @@ func JoinLeague(user users.User, passcode string) error {
 	return err
 }
 
+func SaveUserTeamDetails(user users.User) error {
+	return svc.Db.SaveUserTeamDetails(user)
+}
+
 func GetLeagueUsers(passcode string) ([]users.User, error) {
 	latestRace, err := GetLatestRace()
 	if err != nil {

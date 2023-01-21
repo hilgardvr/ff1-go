@@ -7,6 +7,7 @@ import (
 	"hilgardvr/ff1-go/helpers"
 	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
+	"hilgardvr/ff1-go/users"
 	"log"
 	"net/http"
 )
@@ -88,6 +89,30 @@ func JoinLeagueController(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println("Error joining league:", err)
 		}
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func SaveTeamDetails(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		log.Println("Failed to get user", err)
+		return
+	}
+	err = r.ParseForm()
+	if err != nil {
+		log.Println("Could not parse form")
+		return
+	}
+	teamName := r.Form.Get("team-name")
+	teamPriciple := r.Form.Get("team-principle")
+	err = service.SaveUserTeamDetails(users.User{
+		Email: user.Email,
+		TeamName: teamName,
+		TeamPriciple: teamPriciple,
+	})
+	if err != nil {
+		log.Println("Error saving team details:", err)
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
