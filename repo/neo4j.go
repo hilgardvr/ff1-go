@@ -648,9 +648,20 @@ func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string, season int) ([]users.
 			user, found := record.Get("user")
 			if found {
 				r := user.(map[string]interface{})
+				email := r["email"].(string)
+				teamName := ""
+				if r["teamName"] != nil {
+					teamName = r["teamName"].(string)
+				}
+				teamPrinciple := ""
+				if r["teamPrinciple"] != nil {
+					teamPrinciple = r["teamPrinciple"].(string)
+				}
 				u := users.User{
-					Email: r["email"].(string),
+					Email: email,
 					SeasonPoints: int(r["points"].(int64)),
+					TeamName: teamName,
+					TeamPriciple: teamPrinciple,
 				}
 				us = append(us, u)
 			}

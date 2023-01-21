@@ -17,6 +17,9 @@
                 <a href="/"><button>Home</button></a>
                 <a href="/display-points"><button>Points</button></a>
                 <a href="/display-leagues"><button>Leagues</button></a>
+                {{ if .User.IsAdmin }}
+                    <a href="/admin/admin-page"><button>Admin</button></a>
+                {{ end }}
                 <a href="/logout"><button>Logout</button></a>
             </nav>
 

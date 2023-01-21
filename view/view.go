@@ -167,12 +167,14 @@ func AdminTemplate(w http.ResponseWriter, user users.User, race races.Race, ds [
 	}
 	templData := struct {
 		Email string
+		User users.User
 		IsAdmin bool
 		Season int64
 		Drivers []drivers.Driver
 		Race int64
 	} {
 		Email: user.Email,
+		User: user,
 		IsAdmin: user.IsAdmin,
 		Season: race.Season,
 		Drivers: ds,
@@ -193,10 +195,12 @@ func DisplayLeagueTemplate(w http.ResponseWriter, u users.User, leagueName strin
 	})
 	tempalteData := struct {
 		Email string
+		User users.User
 		Users []users.User
 		LeagueName string
 	}{
 		Email: u.Email,
+		User: u,
 		Users: us,
 		LeagueName: leagueName,
 	}

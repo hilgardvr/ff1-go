@@ -12,17 +12,11 @@
             </div>
         </form>
     {{ else }}
-        {{ if .User.IsAdmin }}
-            <h4>Go to Admin Page</h4>
-            <form action="/admin/admin-page" method="get">
-                <input type="submit" value="Admin Page"/>
-            </form>
-        {{ end}}
         {{ if .RacePoints.Drivers }}
             <a href="/display-points"><h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b></span></h3></a>
         {{ else }}
             {{ if gt .RacePoints.Race.Race 0}}
-                <h4>No Team Selected For Previous Race: <span>{{ .RacePoints.Race.Race }}</span></h4>
+                <a href="/display-points"><h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b> (No drivers selected)</span></h3></a> <span></span>
             {{ end }}
         {{ end}}
         {{ if .User.Team }}
@@ -39,7 +33,7 @@
                 <input type="submit" value="Pick Now"/>
             </form>
         {{ end }}
-        {{ if .User.Leagues }}
+        <!-- {{ if .User.Leagues }}
             <h3>My Leagues</h3>
             {{ $baseUrl := "/display-league?" }}
             {{ range .User.Leagues }}
@@ -51,5 +45,11 @@
                 <input type="submit" value="Join or Create a League"/>
             </form>
         </div>
+    {{ if .User.IsAdmin }}
+        <h4>Go to Admin Page</h4>
+        <form action="/admin/admin-page" method="get">
+            <input type="submit" value="Admin Page"/>
+        </form>
+    {{ end}} -->
     {{ end }}
 {{ end }}
