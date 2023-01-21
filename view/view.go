@@ -149,9 +149,11 @@ func DriversTemplate(w http.ResponseWriter, user users.User, allDrivers []driver
 	}
 	templData := struct {
 		Email string 
+		User users.User
 		TemplData string
 	} {
 		Email: user.Email,
+		User: user,
 		TemplData: string(json),
 	}
 	err = t.ExecuteTemplate(w, "base", templData)
