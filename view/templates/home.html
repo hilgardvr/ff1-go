@@ -13,10 +13,10 @@
         </form>
     {{ else }}
         {{ if .RacePoints.Drivers }}
-            <a href="/display-points"><h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b></span></h3></a>
+            <a href="/display-points"><h3>My Points For <span>{{ if .RacePoints.Race.Track }} {{ .RacePoints.Race.Track }} {{ else }}Race {{ .RacePoints.Race.Race }} {{ end }}: <b>{{ .RacePoints.Total }}</b></span></h3></a>
         {{ else }}
             {{ if gt .RacePoints.Race.Race 0}}
-                <a href="/display-points"><h3>My Points For Race <span>{{ .RacePoints.Race.Race }}: <b>{{ .RacePoints.Total }}</b> (No drivers selected)</span></h3></a> <span></span>
+                <a href="/display-points"><h3>My Points For <span>{{ if .RacePoints.Race.Track }} {{ .RacePoints.Race.Track }} {{ else }}Race {{ .RacePoints.Race.Race }} {{ end }}: <b>{{ .RacePoints.Total }}</b> (No drivers selected)</span></h3></a> <span></span>
             {{ end }}
         {{ end}}
         {{ if .User.Team }}

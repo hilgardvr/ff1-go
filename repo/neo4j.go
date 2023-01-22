@@ -693,9 +693,15 @@ func (n Neo4jRepo) GetAllCompletedRaces() ([]races.Race, error) {
 			race, found := record.Get("race")
 			if found {
 				r := race.(map[string]interface{})
+				t, ok := r["track"]
+				track := ""
+				if ok {
+					track = t.(string)
+				}
 				u := races.Race{
 					Race: r["race"].(int64),
 					Season: r["season"].(int64),
+					Track: track,
 				}
 				rs = append(rs, u)
 			}
@@ -727,9 +733,15 @@ func (n Neo4jRepo) GetAllRaces() ([]races.Race, error) {
 			race, found := record.Get("race")
 			if found {
 				r := race.(map[string]interface{})
+				t, ok := r["track"]
+				track := ""
+				if ok {
+					track = t.(string)
+				}
 				u := races.Race{
 					Race: r["race"].(int64),
 					Season: r["season"].(int64),
+					Track: track,
 				}
 				rs = append(rs, u)
 			}
@@ -743,7 +755,7 @@ func (n Neo4jRepo) GetAllRaces() ([]races.Race, error) {
 	return rs, err
 }
 
-func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.Race) error {
+func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.Race, track string) error {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
@@ -763,6 +775,8 @@ func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.R
 		for _, v := range driverWithPoints {
 			_, err := tx.Run(`
 				match (r:Race {season: $season, race: $race})
+				set r.track = $track
+				with r as r
 				match (d:Driver)
 				where ID(d) = $id
 				merge (d)-[:HAS_RACE {points: $points}]-(r)
@@ -772,6 +786,7 @@ func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.R
 				"race": race.Race,
 				"id": v.Id,
 				"points": v.Points,
+				"track": track,
 			})
 			if err != nil {
 				log.Println("Error adding drivers to race:", err)

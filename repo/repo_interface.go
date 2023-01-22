@@ -34,7 +34,7 @@ type Repo interface {
 
 	GetAllRaces() ([]races.Race, error)
 	GetAllCompletedRaces() ([]races.Race, error)
-	CreateNewRace([]drivers.Driver, races.Race) error
+	CreateNewRace(drivers []drivers.Driver, race races.Race, track string) error
 
 	GetRacePoints(races.Race) (races.RacePoints, error)
 }

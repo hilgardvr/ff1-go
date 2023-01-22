@@ -4,6 +4,7 @@
         <title>FF1 Go</title>
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     </head>
     <body>
         <header>
@@ -17,6 +18,7 @@
                 <a href="/"><button>Home</button></a>
                 <a href="/display-points"><button>Points</button></a>
                 <a href="/display-leagues"><button>Leagues</button></a>
+                <a href="/pick-team"><button>Pick Team</button></a>
                 {{ if .User.IsAdmin }}
                     <a href="/admin/admin-page"><button>Admin</button></a>
                 {{ end }}

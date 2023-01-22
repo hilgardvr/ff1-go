@@ -221,13 +221,13 @@ func GetLeagueUsers(passcode string) ([]users.User, error) {
 	return svc.Db.GetLeagueMembers(passcode, int(latestRace.Season))
 }
 
-func CreateRacePoints(racePoints []drivers.Driver) error {
+func CreateRacePoints(racePoints []drivers.Driver, track string) error {
 	race, err := GetLatestRace()
 	if err != nil {
 		log.Println("Error getting latest race:", err)
 		return err
 	}
-	return svc.Db.CreateNewRace(racePoints, race)
+	return svc.Db.CreateNewRace(racePoints, race, track)
 }
 
 func GetUserRacePoints(user users.User, race races.Race) (races.RacePoints, error) {

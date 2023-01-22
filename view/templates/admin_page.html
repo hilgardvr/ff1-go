@@ -1,6 +1,10 @@
 {{ define "main" }}
     <h4>Enter points for each driver for race: <span>{{ .Season }} - {{ .Race }}</span></h4>
     <form action="/admin/update-data" method="post">
+
+        <label for="track"><span>Track Name</span></label>
+        <input type="text" name="track" id="track">
+
         {{ range .Drivers }}
             <div>
                 <label for="driver"><span>{{ .Name }} {{ .Surname }}</span></label>

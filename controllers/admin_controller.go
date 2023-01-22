@@ -56,6 +56,7 @@ func UpdateRaceData(w http.ResponseWriter, r *http.Request) {
 			log.Println("could not get all drivers for admin: ", err)
 			return 
 		}
+		track := r.Form.Get("track")
 		var driverForPoints []drivers.Driver
 		for _, v := range allDrivers {
 			points := r.Form.Get(strconv.FormatInt(v.Id, 10))
@@ -68,7 +69,7 @@ func UpdateRaceData(w http.ResponseWriter, r *http.Request) {
 				Points: int64(p),
 			})
 		}
-		err = service.CreateRacePoints(driverForPoints)
+		err = service.CreateRacePoints(driverForPoints, track)
 		if err != nil {
 			log.Println("Failed to save driver points:", err)
 			return

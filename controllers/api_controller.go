@@ -67,7 +67,7 @@ func CreateLeagueController(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Failed to send email: ", err)
 	}
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/display-leagues", http.StatusSeeOther)
 }
 
 func JoinLeagueController(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +90,7 @@ func JoinLeagueController(w http.ResponseWriter, r *http.Request) {
 			log.Println("Error joining league:", err)
 		}
 	}
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/display-leagues", http.StatusSeeOther)
 }
 
 func SaveTeamDetails(w http.ResponseWriter, r *http.Request) {

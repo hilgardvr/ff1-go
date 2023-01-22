@@ -76,7 +76,6 @@ func LeagueController(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("League template executing err: ", err)
 	}
-
 }
 
 func DislayLeagueController(w http.ResponseWriter, r *http.Request) {

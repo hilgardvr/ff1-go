@@ -45,7 +45,6 @@ func LoginTemplate(w http.ResponseWriter, user users.User) error {
 
 
 func HomeTemplate(w http.ResponseWriter, user users.User, latestRacePoints races.RacePoints) error {
-	fmt.Println(home)
 	t, err := template.ParseFiles(base, home)
 	if err != nil {
 		return err
@@ -108,7 +107,14 @@ func LeagueTemplate(w http.ResponseWriter, user users.User) error {
 	if err != nil {
 		return err
 	}
-	err = t.ExecuteTemplate(w, "base", user)
+	tmplData := struct {
+		Email string
+		User users.User
+	} {
+		Email: user.Email,
+		User: user,
+	}
+	err = t.ExecuteTemplate(w, "base", tmplData)
 	return err
 }
 
