@@ -7,23 +7,26 @@ import (
 	"hilgardvr/ff1-go/helpers"
 	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
+	"hilgardvr/ff1-go/users"
 	"log"
 	"net/http"
 )
 
 func GetDrivers(w http.ResponseWriter, r *http.Request) {
-	allDrivers, err := service.GetAllDriversForSeason(2022)
+	latestRace, err := service.GetLatestRace()
+	if err != nil {
+		log.Println("Unable to get latest race:", err)
+		return
+	}
+	allDrivers, err := service.GetAllDriversForSeason(int(latestRace.Season))
 	if err != nil {
 		log.Println("Unable to load drivers:", err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(allDrivers)
 }
 
-func GetBudget(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(1000000)
-}
 
 func SaveDriversController(w http.ResponseWriter, r *http.Request) {
 	user, err := session.GetUserSession(r)
@@ -64,7 +67,7 @@ func CreateLeagueController(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Failed to send email: ", err)
 	}
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/display-leagues", http.StatusSeeOther)
 }
 
 func JoinLeagueController(w http.ResponseWriter, r *http.Request) {
@@ -86,6 +89,30 @@ func JoinLeagueController(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println("Error joining league:", err)
 		}
+	}
+	http.Redirect(w, r, "/display-leagues", http.StatusSeeOther)
+}
+
+func SaveTeamDetails(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		log.Println("Failed to get user", err)
+		return
+	}
+	err = r.ParseForm()
+	if err != nil {
+		log.Println("Could not parse form")
+		return
+	}
+	teamName := r.Form.Get("team-name")
+	teamPriciple := r.Form.Get("team-principle")
+	err = service.SaveUserTeamDetails(users.User{
+		Email: user.Email,
+		TeamName: teamName,
+		TeamPriciple: teamPriciple,
+	})
+	if err != nil {
+		log.Println("Error saving team details:", err)
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

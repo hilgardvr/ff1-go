@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
 	"hilgardvr/ff1-go/view"
@@ -21,7 +22,17 @@ func PickTeamController(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		fmt.Println("session found for email:", user.Email)
-		err = view.DriversTemplate(w, user)
+		latestRace, err := service.GetLatestRace()
+		if err != nil {
+			log.Println("Could not get latest race:", err)
+			return 
+		}
+		allDrivers, err := service.GetAllDriversForSeason(int(latestRace.Season))
+		if err != nil {
+			log.Println("Could not get all drivers by season:", err)
+			return 
+		}
+		err = view.DriversTemplate(w, user, allDrivers)
 		if err != nil {
 			log.Println("template executing err:", err)
 		}
@@ -38,7 +49,17 @@ func HomeContoller(w http.ResponseWriter, r *http.Request) {
 			log.Println("template executing err:", err)
 		}
 	} else {
-		err = view.HomeTemplate(w, user)
+		latestCompleted, err := service.GetLatestCompletedRace()
+		if err != nil {
+			log.Println("could not get latest race:", err)
+			return
+		}
+		latestUserRacePoints, err := service.GetUserRacePoints(user, latestCompleted)
+		if err != nil {
+			log.Println("could not get latest race points:", err)
+			return
+		}
+		err = view.HomeTemplate(w, user, latestUserRacePoints)
 		if err != nil {
 			log.Println("template executing err:", err)
 		}
@@ -55,7 +76,6 @@ func LeagueController(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("League template executing err: ", err)
 	}
-
 }
 
 func DislayLeagueController(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +116,66 @@ func DislayLeagueController(w http.ResponseWriter, r *http.Request) {
 		err = view.DisplayLeagueTemplate(w, user, leagueName, leagueUsers)
 		if err != nil {
 			log.Println("Error displaying league: ", err)
+		}
+	}
+}
+
+func DisplayLeaguesController(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		fmt.Println("no session found")
+		err = view.LoginCodeTemplate(w)
+		if err != nil {
+			log.Println("template executing err:", err)
+		}
+	} else {
+		latestCompleted, err := service.GetLatestCompletedRace()
+		if err != nil {
+			log.Println("could not get latest race:", err)
+			return
+		}
+		latestUserRacePoints, err := service.GetUserRacePoints(user, latestCompleted)
+		if err != nil {
+			log.Println("could not get latest race points:", err)
+			return
+		}
+		err = view.DisplayLeagues(w, user, latestUserRacePoints)
+		if err != nil {
+			log.Println("template executing err:", err)
+		}
+	}
+}
+
+func DisplayRacePoints(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		fmt.Println("no session found")
+		err = view.LoginCodeTemplate(w)
+		if err != nil {
+			log.Println("template executing err:", err)
+		}
+	} else {
+		allRaces, err := service.GetAllRacesForCurrentSeason()
+		if err != nil {
+			log.Println("could not get all races:", err)
+			return
+		}
+		var racePoints []races.RacePoints
+		for _, v := range allRaces {
+			points, err := service.GetUserRacePoints(user, v)
+			if err != nil {
+				log.Println("could not get user races points:", err)
+				return
+			}
+			racePoints = append(racePoints, points)
+		}
+		if err != nil {
+			log.Println("could not get latest race points:", err)
+			return
+		}
+		err = view.RacePointsTemplate(w, user, racePoints)
+		if err != nil {
+			log.Println("template executing err:", err)
 		}
 	}
 }

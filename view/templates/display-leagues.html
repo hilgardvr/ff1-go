@@ -1,0 +1,16 @@
+{{ define "main" }}
+    {{ if .User.Leagues }}
+        <h3>My Leagues</h3>
+        {{ $baseUrl := "/display-league?" }}
+        {{ range .User.Leagues }}
+            <a href="{{ $baseUrl }}{{ .Name }}={{ .Passcode }}" >{{ .Name }}</a><br/>
+        {{ end }}
+    {{ else }}
+        <h3>No Leagues Joined Yet</h3>
+    {{ end }}
+    <div>
+        <form action="/league" method="get">
+            <input type="submit" value="Join or Create a League"/>
+        </form>
+    </div>
+{{ end }}

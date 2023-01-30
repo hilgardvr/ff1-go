@@ -1,30 +1,25 @@
 {{ define "main" }}
     <body>
-        <form x-data="driverSelectionForm()" @submit.prevent="submitForm()" action="/save-team">
-            <div 
-                x-init="
-                    data.allDrivers = await (await fetch('/api/all_drivers')).json()
-                    data.budget = await (await fetch('/api/budget')).json()
-                "
-            >
+        <form x-data="driverSelectionForm({{ .TemplData }})" @submit.prevent="submitForm()" action="/save-team">
                 <div>
-                    <h5>Budget Left: $<span x-text="totalCost"></span></h5>
+                    <h4>Budget Left: $<span x-text="totalCost.toLocaleString('en-US')"></span></h4>
                     <h4>Selected Drivers</h4>
                     <template x-for="driver in data.selectedDrivers">
                         <li> 
                             <span x-text="driver.name"></span>
                             <span>$</span>
-                            <span x-text="driver.price"></span>
+                            <span x-text="driver.price.toLocaleString('en-US')"></span>
                             <button type="button" x-on:click="addDriver(driver, data.allDrivers);removeDriver(driver, data.selectedDrivers)">Remove</button>
                         </li>
                     </template>
                 </div>
 
                 <div x-data="{ 
-                    get isInvalid() { return totalCost < 0 || data.selectedDrivers.length != 4 }
+                    get isInvalid() { 
+                        return totalCost < 0 || data.selectedDrivers.length != 4 }
                 }">
 
-                    <h4 x-show="isInvalid">You team needs to cost less than <span x-text="data.budget"></span> and you need to select exactly 4 drivers</h4>
+                    <h4 x-show="isInvalid">You team needs to cost less than $<span x-text="data.budget.toLocaleString('en-US')"></span> and you need to select exactly 4 drivers</h4>
 
                     <button x-bind:disabled="isInvalid" >Save Team</button>
                 </div>
@@ -36,7 +31,7 @@
                             <li>
                                 <span x-text="driver.name"></span>
                                 <span>$</span>
-                                <span x-text="driver.price"></span>
+                                <span x-text="driver.price.toLocaleString('en-US')"></span>
                                 <button type="button" x-on:click="addDriver(driver, data.selectedDrivers);removeDriver(driver, data.allDrivers)">Select</button>
                             </li>
                         </template>
@@ -47,20 +42,25 @@
 
 
             <script>
-                function driverSelectionForm() {
+                function driverSelectionForm(data) {
+                    console.log(data)
                     return {
                         data: {
-                            allDrivers: [], 
-                            selectedDrivers: [], 
-                            budget: 0
+                            allDrivers: data.AllDrivers,
+                            selectedDrivers: data.Team,
+                            budget: data.Budget
                         },
                         get totalCost() { 
-                            return this.data.budget - this.data.selectedDrivers.reduce((acc, i) => acc + i.price, 0)
+                            return (this.data.budget - this.data.selectedDrivers.reduce((acc, i) => acc + i.price, 0))
                         },
                         get selected() { return this.data.selectedDrivers.sort((a,b) => a.price < b.price) },
                         get available() { return this.data.allDrivers.sort((a,b) => a.price < b.price) },
+                        sortByPrice(drivers) {
+                            return drivers.sort((a,b) => a.price < b.price)
+                        },
                         addDriver(driver, list) {
                             list.push(driver)
+                            this.sortByPrice(list)
                         },
                         removeDriver(driver, list) {
                             const index = list.indexOf(driver)

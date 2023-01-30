@@ -25,7 +25,11 @@ func GetUserSession(r *http.Request) (users.User, error) {
 	if !found {
 		return users.User{}, errors.New("Session not found")
 	}
-	ds, err := svc.Db.GetTeam(user)
+	latestRace, err := service.GetLatestRace()
+	if err != nil {
+		return users.User{}, err
+	}
+	ds, err := svc.Db.GetUserTeamForRace(user, latestRace)
 	if err != nil {
 		return users.User{}, err
 	}

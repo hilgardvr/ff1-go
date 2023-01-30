@@ -1,0 +1,23 @@
+{{ define "main" }}
+    {{ range .RacePoints }}
+        {{ if gt .Race.Race 0 }}
+            {{ if .Drivers }}
+                <div x-data="{ open: false}">
+                    <button x-on:click="open = ! open"><h3>Total Points For <span>{{ if .Race.Track }} {{ .Race.Track }} {{ else }}Race {{ .Race.Race }} {{ end }}: <b>{{ .Total }}</b></span></h3></button> 
+                    <div x-show="open">
+                        {{ range .Drivers }}
+                            <div>{{.Name}} {{.Surname}} {{.Points}}</div>
+                        {{ end }}
+                    </div>
+                </div>
+            {{ else }}
+                <div x-data="{ open: false}">
+                <button x-on:click="open = ! open"><h3>Total Points For <span>{{ if .Race.Track }} {{ .Race.Track }} {{ else }}Race {{ .Race.Race }} {{ end }}: <b>0</b></span></h3></button>
+                    <div x-show="open">
+                        <div>No Team Selected For Race <span>{{ if .Race.Track }} {{ .Race.Track }} {{ else }}Race {{ .Race.Race }} {{ end }}</span></div>
+                    </div>
+                </div>
+            {{ end }}
+        {{ end }}
+    {{ end}}
+{{ end }}

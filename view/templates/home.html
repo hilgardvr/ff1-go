@@ -1,33 +1,55 @@
 {{ define "main" }}
-    {{ if .IsAdmin }}
+    {{ if not .User.TeamName }}
+        <form action="/api/team-details" method="post">
+            <div>
+                <label for="team-name">Team name:</label>
+                <input type="text" name="team-name" id="team-name" required>
+                <label for="team-principle">Team principle(your name):</label>
+                <input type="text" name="team-principle" id="team-principle" required>
+            </div>
+            <div>
+                <input type="submit" value="Submit">
+            </div>
+        </form>
+    {{ else }}
+        {{ if .RacePoints.Drivers }}
+            <a href="/display-points"><h3>My Points For <span>{{ if .RacePoints.Race.Track }} {{ .RacePoints.Race.Track }} {{ else }}Race {{ .RacePoints.Race.Race }} {{ end }}: <b>{{ .RacePoints.Total }}</b></span></h3></a>
+        {{ else }}
+            {{ if gt .RacePoints.Race.Race 0}}
+                <a href="/display-points"><h3>My Points For <span>{{ if .RacePoints.Race.Track }} {{ .RacePoints.Race.Track }} {{ else }}Race {{ .RacePoints.Race.Race }} {{ end }}: <b>{{ .RacePoints.Total }}</b> (No drivers selected)</span></h3></a> <span></span>
+            {{ end }}
+        {{ end}}
+        {{ if .User.Team }}
+            <h3>My team for next race:</h3>
+            {{range .User.Team}}
+                <li>{{.Name}} {{.Surname}}</li>
+            {{ end }}
+            <form action="/repick-team" method="put">
+                <input type="submit" value="Change team"/>
+            </form>
+        {{ else }}
+            <h3>No Team Selected For Next Race</h3>
+            <form action="/pick-team" method="get" >
+                <input type="submit" value="Pick Now"/>
+            </form>
+        {{ end }}
+        <!-- {{ if .User.Leagues }}
+            <h3>My Leagues</h3>
+            {{ $baseUrl := "/display-league?" }}
+            {{ range .User.Leagues }}
+                <a href="{{ $baseUrl }}{{ .Name }}={{ .Passcode }}" >{{ .Name }}</a><br/>
+            {{ end }}
+        {{ end }}
+        <div>
+            <form action="/league" method="get">
+                <input type="submit" value="Join or Create a League"/>
+            </form>
+        </div>
+    {{ if .User.IsAdmin }}
         <h4>Go to Admin Page</h4>
         <form action="/admin/admin-page" method="get">
             <input type="submit" value="Admin Page"/>
         </form>
-    {{ end}}
-    {{ if .Leagues }}
-        <h3>My Leagues</h3>
-        {{ $baseUrl := "/display-league?" }}
-        {{ range .Leagues }}
-            <a href="{{ $baseUrl }}{{ .Name }}={{ .Passcode }}" >{{ .Name }}</a><br/>
-        {{ end }}
-    {{ end }}
-    <div>
-        <form action="/league" method="get">
-            <input type="submit" value="Join or Create a League"/>
-        </form>
-    </div>
-    {{ if .Team }}
-        <h4>Your current team:</h4>
-        {{range .Team}}
-            <li>{{.Name}} <span>${{.Price}}</span></li>
-        {{ end }}
-        <form action="/repick-team" method="put">
-            <input type="submit" value="Change team"/>
-        </form>
-    {{ else }}
-        <form action="/pick-team" method="get" >
-            <input type="submit" value="Pick Team"/>
-        </form>
+    {{ end}} -->
     {{ end }}
 {{ end }}

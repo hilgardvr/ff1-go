@@ -10,8 +10,6 @@ import (
 	"strconv"
 )
 
-var season = 2022
-
 func CreateRacePoints(w http.ResponseWriter, r *http.Request) {
 	user, err := session.GetUserSession(r)
 	if err != nil {
@@ -19,7 +17,12 @@ func CreateRacePoints(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user.IsAdmin {
-		drivers, err := service.GetAllDriversForSeason(season)
+		latestRace, err := service.GetLatestRace()
+		if err != nil {
+			log.Println("error fetching latest race:", err)
+			return
+		}
+		drivers, err := service.GetAllDriversForSeason(int(latestRace.Season))
 		if err != nil {
 			log.Println("error fetching drivers:", err)
 			return
@@ -43,11 +46,17 @@ func UpdateRaceData(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatalln("Could not parse form")
 		}
-		allDrivers, err := service.GetAllDriversForSeason(season)
+		latestRace, err := service.GetLatestRace()
+		if err != nil {
+			log.Println("error fetching latest race:", err)
+			return
+		}
+		allDrivers, err := service.GetAllDriversForSeason(int(latestRace.Season))
 		if err != nil {
 			log.Println("could not get all drivers for admin: ", err)
 			return 
 		}
+		track := r.Form.Get("track")
 		var driverForPoints []drivers.Driver
 		for _, v := range allDrivers {
 			points := r.Form.Get(strconv.FormatInt(v.Id, 10))
@@ -60,7 +69,7 @@ func UpdateRaceData(w http.ResponseWriter, r *http.Request) {
 				Points: int64(p),
 			})
 		}
-		err = service.CreateRacePoints(driverForPoints)
+		err = service.CreateRacePoints(driverForPoints, track)
 		if err != nil {
 			log.Println("Failed to save driver points:", err)
 			return

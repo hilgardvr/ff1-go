@@ -47,12 +47,16 @@ func Init(config *config.Config) error {
 func UpsertTeam(user users.User, ds []drivers.Driver) error {
 	valid := drivers.ValidateTeam(ds)
 	if valid {
-		err := svc.Db.DeleteTeam(user)
+		latesstRace, err := GetLatestRace()
+		if err != nil {
+			return nil
+		}
+		err = svc.Db.DeleteTeam(user, latesstRace)
 		if err != nil {
 			log.Println("Failed to delete team for user: ", user, err)
 			return err
 		}
-		err = svc.Db.SaveTeam(user, ds)
+		err = svc.Db.SaveTeam(user, ds, latesstRace)
 		if err != nil {
 			log.Println("Failed to save team for user: ", user, err)
 			return err
@@ -62,7 +66,12 @@ func UpsertTeam(user users.User, ds []drivers.Driver) error {
 }
 
 func GetUserTeam(user users.User) (users.User, error) {
-	team, err := svc.Db.GetTeam(user)
+	latestRace, err := GetLatestRace()
+	if err != nil {
+		log.Println("Failed to fetch latest race: ", user, err)
+		return users.User{}, err
+	}
+	team, err := svc.Db.GetUserTeamForRace(user, latestRace)
 	if err != nil {
 		log.Println("Failed to fetch user team for user: ", user, err)
 		return users.User{}, err
@@ -104,9 +113,71 @@ func GetLatestRace() (races.Race, error) {
 	return allRaces[0], nil
 }
 
+func GetAllCompletedRaces() ([]races.Race, error) {
+	allCompletedRaces, err := svc.Db.GetAllCompletedRaces()
+	return allCompletedRaces, err
+}
+
+func GetLatestCompletedRace() (races.Race, error) {
+	allCompleted, err := GetAllCompletedRaces()
+	if err != nil {
+		log.Println("could not get all completed races")
+		return races.Race{}, err
+	}
+	sort.Slice(allCompleted, func(i, j int) bool {
+		if allCompleted[i].Season > allCompleted[j].Season {
+			return true
+		} else {
+			if allCompleted[i].Season == allCompleted[j].Season {
+				return allCompleted[i].Race > allCompleted[j].Race
+			} else {
+				return false
+			}
+		}
+	})
+	return allCompleted[0], nil
+}
+
+func SortRacesDesc(races []races.Race) (race []races.Race) {
+	sort.Slice(races, func(i, j int) bool {
+		if races[i].Season > races[j].Season {
+			return true
+		} else {
+			if races[i].Season == races[j].Season {
+				return races[i].Race > races[j].Race
+			} else {
+				return false
+			}
+		}
+	})
+	return races
+}
+
 func GetAllRaces() ([]races.Race, error) {
 	allRaces, err := svc.Db.GetAllRaces()
 	return allRaces, err
+}
+
+func GetAllRacesForCurrentSeason() ([]races.Race, error) {
+	l, err := GetLatestRace()
+	if err != nil {
+		return []races.Race{}, err
+	}
+	return GetAllRacesForSeason(l.Season)
+}
+
+func GetAllRacesForSeason(season int64) ([]races.Race, error) {
+	allRaces, err := GetAllRaces()
+	if err != nil {
+		return allRaces, err
+	}
+	var seasonRaces []races.Race
+	for _, v := range allRaces {
+		if v.Season == season {
+			seasonRaces = append(seasonRaces, v)
+		}
+	}
+	return SortRacesDesc(seasonRaces), err
 }
 
 func ValidateLoginCode(email string, code string) bool {
@@ -137,16 +208,48 @@ func JoinLeague(user users.User, passcode string) error {
 	return err
 }
 
-func GetLeagueUsers(passcode string) ([]users.User, error) {
-	return svc.Db.GetLeagueMembers(passcode)
+func SaveUserTeamDetails(user users.User) error {
+	return svc.Db.SaveUserTeamDetails(user)
 }
 
-func CreateRacePoints(racePoints []drivers.Driver) error {
+func GetLeagueUsers(passcode string) ([]users.User, error) {
+	latestRace, err := GetLatestRace()
+	if err != nil {
+		log.Println("Could not get latest race:", err)
+		return []users.User{}, err
+	}
+	return svc.Db.GetLeagueMembers(passcode, int(latestRace.Season))
+}
+
+func CreateRacePoints(racePoints []drivers.Driver, track string) error {
 	race, err := GetLatestRace()
 	if err != nil {
 		log.Println("Error getting latest race:", err)
 		return err
 	}
-	race.Race += 1
-	return svc.Db.CreateNewRace(racePoints, race)
+	return svc.Db.CreateNewRace(racePoints, race, track)
+}
+
+func GetUserRacePoints(user users.User, race races.Race) (races.RacePoints, error) {
+	ut, err := svc.Db.GetUserTeamForRace(user, race)
+	if err != nil {
+		log.Println("Error getting user team for race:", err)
+		return races.RacePoints{}, err
+	}
+	rp, err := svc.Db.GetRacePoints(race)
+	if err != nil {
+		log.Println("Error getting latest race:", err)
+		return races.RacePoints{}, err
+	}
+	var teamWithPoints []drivers.Driver
+	var total int64
+	for _, v := range ut {
+		for _, r := range rp.Drivers {
+			if v.Id == r.Id {
+				teamWithPoints = append(teamWithPoints, r)
+				total += r.Points
+			}
+		}
+	}
+	return races.RacePoints{Race: race, Drivers: teamWithPoints, Total: total}, err
 }

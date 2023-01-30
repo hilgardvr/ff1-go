@@ -101,9 +101,7 @@ func (n *Neo4jRepo)Init(config *config.Config) error {
 	n.driver = driver
 	return err
 }
-
-	
-func (n Neo4jRepo)GetDriversBySeason(season int) (neo4jDriver []drivers.Driver, err error) {
+func (n Neo4jRepo)GetDriversBySeason(season int) ([]drivers.Driver,  error) {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
@@ -334,164 +332,118 @@ func (n Neo4jRepo) GetSession(uuid string) (users.User, bool) {
 	if err != nil {
 		return users.User{}, false
 	}
-	email, found := result.(map[string]interface{})["email"] 
+	res := result.(map[string]interface{})
+	email, found := res["email"] 
 	if !found {
 		return users.User{}, false
 	}
-	isAdmin, found := result.(map[string]interface{})["isadmin"] 
+	isAdmin, found := res["isadmin"] 
 	if !found {
 		isAdmin = false
-		found = true
+	}
+	teamName, found := res["teamName"] 
+	if !found {
+		teamName = ""
+	}
+	teamPriciple, found := res["teamPrinciple"] 
+	if !found {
+		teamPriciple = ""
 	}
 	n.DeleteLoginCode(email.(string))
-	return users.User{Email: email.(string), IsAdmin: isAdmin.(bool)}, found
+	return users.User{
+		Email: email.(string), 
+		IsAdmin: isAdmin.(bool),
+		TeamName: teamName.(string),
+		TeamPriciple: teamPriciple.(string),
+	}, true
 }
 
-func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver) error {
+func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver, race races.Race) error {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
 	}()
-	var drivers []int64
+	var driverIds []int64
 	for _, d := range selectedDrivers {
-		drivers = append(drivers, d.Id)
+		driverIds = append(driverIds, d.Id)
 	}
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (u:User {email: $email})
-			merge (t:Team {drivers: $team})
+			match (r:Race {season: $season, race: $race})
+			match (d:Driver) where ID(d) in $driverIds
+			merge (t:Team {email: $email})-[:FOR_RACE]->(r)
 			merge (u)-[h:HAS_TEAM]->(t)
+			merge (t)-[hd:HAS_DRIVER]->(d)
 			return u { .* } as user
 		`,
 		map[string]interface{}{
 			"email": user.Email,
-			"team": drivers,
+			"season": race.Season,
+			"race": race.Race,
+			"driverIds": driverIds,
 		})
-		record, err := result.Single()
 		if err != nil {
+			log.Println("Error save team:", err)
+			return users.User{}, errors.New("Error running save team query")
+		}
+		_, err = result.Consume()
+		if err != nil {
+			log.Println("Error creating team", err)
 			return users.User{}, err
 		}
-		user, found := record.Get("user")
-		if !found {
-			return users.User{}, errors.New("Could not find user in result")
-		}
-		return user, nil
+		return users.User{}, nil
 	})
 	return err
 }
 
-func (n Neo4jRepo) GetTeam(user users.User) ([]drivers.Driver, error) {
+func (n Neo4jRepo) GetUserTeamForRace(user users.User, race races.Race) ([]drivers.Driver, error) {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
 	}()
-	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+	allDrivers, err := n.GetDriversBySeason(int(race.Season))
+	if err != nil {
+		log.Println("COuld not get all drivers by season:", err)
+		return []drivers.Driver{}, err
+	}
+	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
-			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)
-			return t.drivers as team
+			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)-[:HAS_DRIVER]-(d:Driver)
+			where (t)-[:FOR_RACE]->(:Race {season: $season, race: $race})
+			optional match (d)-[hr:HAS_RACE]-(:Race)
+			return ID(d) as id, sum(hr.points) as points
 		`,
 		map[string]interface{}{
 			"email": user.Email,
+			"season": race.Season,
+			"race": race.Race,
 		})
-		record, err := result.Single()
-		if err != nil {
-			return []drivers.Driver{}, err
-		}
-		team, found := record.Get("team")
-		if !found {
-			return []drivers.Driver{}, errors.New("Could not find user in result")
-		}
-		return team, nil
-	})
-	if err != nil {
-		return []drivers.Driver{}, nil
-	}
-	res, found := result.([]interface{})
-	if !found {
-		return []drivers.Driver{}, errors.New("Could not find the team in db results")
-	}
-	var ids []int64
-	for _, d := range res {
-		ids = append(ids, d.(int64))
-	}
-	allDrivers, err := n.GetDriversBySeason(2022)
-	if err != nil {
-		log.Println("Could not get drivers by season:", err)
-		return []drivers.Driver{}, err
-	}
-	var ds []drivers.Driver
-	for _, ad := range allDrivers {
-		for _, ud := range ids {
-			if ud == ad.Id {
-				ds = append(ds, ad)
+		var ls []drivers.Driver
+		for result.Next() {
+			record := result.Record()
+			id, found := record.Get("id")
+			if !found {
+				log.Println("Could not find driver id")
+				continue
+			}
+			for _, v := range allDrivers {
+				if v.Id == id.(int64) {
+					ls = append(ls, v)
+				}
 			}
 		}
+
+		return ls, err
+	})
+	if err != nil {
+		return []drivers.Driver{}, err
 	}
+	ds := result.([]drivers.Driver)
 	return ds, err
 }
 
-// func (n Neo4jRepo) GetDriversByIdForSeason(ids []int64, season int) ([]drivers.Driver, error) {
-// 	session := n.driver.NewSession(neo4j.SessionConfig{})
-// 	defer func() {
-// 		session.Close()
-// 	}()
-// 	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-// 		result, err := tx.Run(`
-// 			match (d:Driver)-[hr:HAS_RACE]-(r:Race {season: $season})
-// 			where ID(d) in $ids
-// 			return ID(d) as id, d.name as name, d.surname as surname, sum(hr.points) as points
-// 		`,
-// 		map[string]interface{}{
-// 			"ids": ids,
-// 			"season": season,
-// 		})
-// 		if err != nil {
-// 			return []drivers.Driver{}, err
-// 		}
-// 		var ds []drivers.Driver
-// 		for result.Next() {
-// 			record := result.Record()
-// 			id, found := record.Get("id")
-// 			if !found {
-// 				log.Println("Could not find name")
-// 				return []drivers.Driver{}, errors.New("Could not extract name")
-// 			}
-// 			name, found := record.Get("name")
-// 			if !found {
-// 				log.Println("Could not find name")
-// 				return []drivers.Driver{}, errors.New("Could not extract name")
-// 			}
-// 			surname, found := record.Get("surname")
-// 			if !found {
-// 				log.Println("Could not find name")
-// 				return []drivers.Driver{}, errors.New("Could not extract name")
-// 			}
-// 			points, found := record.Get("points")
-// 			if !found {
-// 				log.Println("Could not find name")
-// 				return []drivers.Driver{}, errors.New("Could not extract name")
-// 			}
-// 			l := drivers.Driver{
-// 				Id: id.(int64),
-// 				Name: name.(string),
-// 				Surname: surname.(string),
-// 				Points: points.(int64),
-// 			}
-// 			ds = append(ds, l)
-// 		}
-// 		return ds, err
-// 	})
-// 	if err != nil {
-// 		return []drivers.Driver{}, err
-// 	}
-// 	parsedDrivers, found := result.([]drivers.Driver)
-// 	if !found {
-// 		return []drivers.Driver{}, errors.New("Could not find the drivers in db results")
-// 	}
-// 	return parsedDrivers, err
-// }
-
-func (n Neo4jRepo) DeleteTeam(user users.User) error {
+func (n Neo4jRepo) DeleteTeam(user users.User, race races.Race) error {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
@@ -499,10 +451,13 @@ func (n Neo4jRepo) DeleteTeam(user users.User) error {
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)
+			where (t)-[:FOR_RACE]->(:Race {season: $season, race: $race})
 			detach delete t
 		`,
 		map[string]interface{}{
 			"email": user.Email,
+			"season": race.Season,
+			"race": race.Race,
 		})
 		resultSummary, err := result.Consume()
 		if err != nil {
@@ -617,7 +572,56 @@ func (n Neo4jRepo) JoinLeague(user users.User, passcode string) error {
 	return err
 }
 
-func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error) {
+func (n Neo4jRepo) GetRacePoints(race races.Race) (races.RacePoints, error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (d:Driver)
+			optional match (d)-[hr:HAS_RACE]-(r:Race {season: $season, race: $race})
+			return d {.*, driverId: ID(d)} as driver, hr.points as driverPoints
+		`,
+		map[string]interface{}{
+			"season": race.Season,
+			"race": race.Race,
+		})
+		if err != nil {
+			return []leagues.League{}, err
+		}
+		var dr []drivers.Driver
+		for result.Next() {
+			record := result.Record()
+			var points int64
+			pointsRec, found := record.Get("driverPoints")
+			if found && pointsRec != nil {
+				points = pointsRec.(int64)
+			} else {
+				points = 0
+			}
+			driver, found := record.Get("driver")
+			if found {
+				rec := driver.(map[string]interface{})
+				d := drivers.Driver{
+					Id: rec["driverId"].(int64),
+					Name: rec["name"].(string),
+					Surname: rec["surname"].(string),
+					Points: points,
+				}
+				dr = append(dr, d)
+			}
+		}
+		return dr, err
+	})
+	ds, found := res.([]drivers.Driver)
+	if !found {
+		return races.RacePoints{}, errors.New("Could not find the drivers in db results")
+	}
+	return races.RacePoints{Race: race, Drivers: ds}, err
+}
+
+func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string, season int) ([]users.User, error) {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
@@ -625,10 +629,15 @@ func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error)
 	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (l:League {passcode: $passcode})-[:LEAGUE]-(u:User)
-			return u { .* } as user
+			optional match (u)-[ht:HAS_TEAM]-(t:Team)-[fr:FOR_RACE]-(r:Race {season: $season})
+			optional match (d:Driver)-[hr:HAS_RACE]-(r)
+			where (t)-[:HAS_DRIVER]-(d)
+			with sum(hr.points) as p, u as u
+			return u {. *, points: p} as user
 		`,
 		map[string]interface{}{
 			"passcode": leaguePasscode,
+			"season": season,
 		})
 		if err != nil {
 			return []leagues.League{}, err
@@ -639,8 +648,20 @@ func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error)
 			user, found := record.Get("user")
 			if found {
 				r := user.(map[string]interface{})
+				email := r["email"].(string)
+				teamName := ""
+				if r["teamName"] != nil {
+					teamName = r["teamName"].(string)
+				}
+				teamPrinciple := ""
+				if r["teamPrinciple"] != nil {
+					teamPrinciple = r["teamPrinciple"].(string)
+				}
 				u := users.User{
-					Email: r["email"].(string),
+					Email: email,
+					SeasonPoints: int(r["points"].(int64)),
+					TeamName: teamName,
+					TeamPriciple: teamPrinciple,
 				}
 				us = append(us, u)
 			}
@@ -652,6 +673,46 @@ func (n Neo4jRepo) GetLeagueMembers(leaguePasscode string) ([]users.User, error)
 		return []users.User{}, errors.New("Could not find the team in db results")
 	}
 	return us, err
+}
+
+func (n Neo4jRepo) GetAllCompletedRaces() ([]races.Race, error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (:Driver)-[:HAS_RACE]-(r:Race) return r { .* } as race
+		`, map[string]interface{}{})
+		if err != nil {
+			return []races.Race{}, err
+		}
+		var rs []races.Race
+		for result.Next() {
+			record := result.Record()
+			race, found := record.Get("race")
+			if found {
+				r := race.(map[string]interface{})
+				t, ok := r["track"]
+				track := ""
+				if ok {
+					track = t.(string)
+				}
+				u := races.Race{
+					Race: r["race"].(int64),
+					Season: r["season"].(int64),
+					Track: track,
+				}
+				rs = append(rs, u)
+			}
+		}
+		return rs, err
+	})
+	rs, found := res.([]races.Race)
+	if !found {
+		return []races.Race{}, errors.New("Could not find the team in db results")
+	}
+	return rs, err
 }
 
 func (n Neo4jRepo) GetAllRaces() ([]races.Race, error) {
@@ -672,9 +733,15 @@ func (n Neo4jRepo) GetAllRaces() ([]races.Race, error) {
 			race, found := record.Get("race")
 			if found {
 				r := race.(map[string]interface{})
+				t, ok := r["track"]
+				track := ""
+				if ok {
+					track = t.(string)
+				}
 				u := races.Race{
 					Race: r["race"].(int64),
 					Season: r["season"].(int64),
+					Track: track,
 				}
 				rs = append(rs, u)
 			}
@@ -688,7 +755,7 @@ func (n Neo4jRepo) GetAllRaces() ([]races.Race, error) {
 	return rs, err
 }
 
-func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.Race) error {
+func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.Race, track string) error {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
@@ -696,10 +763,11 @@ func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.R
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		_, err := tx.Run(`
 			merge (r:Race {season: $season, race: $race})
+			return r
 		`,
 		map[string]interface{}{
 			"season": race.Season,
-			"race": race.Race,
+			"race": race.Race + 1,
 		})
 		if err != nil {
 			return "", err
@@ -707,6 +775,8 @@ func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.R
 		for _, v := range driverWithPoints {
 			_, err := tx.Run(`
 				match (r:Race {season: $season, race: $race})
+				set r.track = $track
+				with r as r
 				match (d:Driver)
 				where ID(d) = $id
 				merge (d)-[:HAS_RACE {points: $points}]-(r)
@@ -716,12 +786,44 @@ func (n Neo4jRepo) CreateNewRace(driverWithPoints []drivers.Driver, race races.R
 				"race": race.Race,
 				"id": v.Id,
 				"points": v.Points,
+				"track": track,
 			})
 			if err != nil {
+				log.Println("Error adding drivers to race:", err)
 				return "", err
 			}
 		}
 		return "", nil
+	})
+	return err
+}
+
+func (n Neo4jRepo) SaveUserTeamDetails(user users.User) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})
+			set u.teamName = $teamName
+			set u.teamPrinciple = $teamPrinciple
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+			"teamName": user.TeamName,
+			"teamPrinciple": user.TeamPriciple,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
 	})
 	return err
 }

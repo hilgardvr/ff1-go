@@ -22,15 +22,19 @@ type Repo interface {
 	SaveSession(email, uuid string, duration time.Duration) error
 	GetSession(uuid string) (users.User, bool)
 
-	SaveTeam(users.User, []drivers.Driver) error
-	GetTeam(users.User) ([]drivers.Driver, error)
-	DeleteTeam(users.User) error
+	SaveTeam(users.User, []drivers.Driver, races.Race) error
+	GetUserTeamForRace(user users.User, race races.Race) ([]drivers.Driver, error)
+	DeleteTeam(users.User, races.Race) error
+	SaveUserTeamDetails(users.User) error
 
 	SaveLeague(user users.User, leagueName string, passcode string) error
 	GetLeagueForUser(user users.User) (leagues []leagues.League, err error)
 	JoinLeague(user users.User, leaguePasscode string) error
-	GetLeagueMembers(leaguePasscode string) ([]users.User, error)
+	GetLeagueMembers(leaguePasscode string, season int) ([]users.User, error)
 
 	GetAllRaces() ([]races.Race, error)
-	CreateNewRace([]drivers.Driver, races.Race) error
+	GetAllCompletedRaces() ([]races.Race, error)
+	CreateNewRace(drivers []drivers.Driver, race races.Race, track string) error
+
+	GetRacePoints(races.Race) (races.RacePoints, error)
 }

@@ -1,8 +1,14 @@
 {{ define "main" }}
     <div>
         <h3>{{ .LeagueName }}</h3>
-        {{ range .Users }}
-            <li>{{ .Email }} </li>
-        {{ end }}
+        <ol>
+            {{ range .Users }}
+                {{ if and .TeamName .TeamPriciple }}
+                    <li>{{ .TeamName }}({{ .TeamPriciple }}) <span>{{ .SeasonPoints }}</span> </li>
+                {{ else }}
+                    <li>{{ .Email }} <span>{{ .SeasonPoints }}</span> </li>
+                {{ end }}
+            {{ end }}
+        </ol>
     </div>
 {{ end }}
