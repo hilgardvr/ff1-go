@@ -8,8 +8,6 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN rm config.json
-RUN rm config.sh
 RUN rm Dockerfile
 
 RUN go build
