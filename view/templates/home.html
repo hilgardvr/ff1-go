@@ -22,8 +22,11 @@
         {{ if .User.Team }}
             <h3>My team for next race:</h3>
             {{range .User.Team}}
-                <li>{{.Name}} {{.Surname}} ({{.Constructor.ConstructorName}}) - ${{.Price}}</li>
+                <li x-data="{price: {{.Price}} }">{{.Name}} {{.Surname}} ({{.Constructor.ConstructorName}}) - $<span x-text="price.toLocaleString('en-US')"></span></li>
             {{ end }}
+            <div x-data="{teamPrice: {{.TeamPrice}} }">
+                <h4>Total Cost: $<span x-text="teamPrice.toLocaleString('en-US')"></span></h4>
+            </div>
             <form action="/repick-team" method="put">
                 <input type="submit" value="Change team"/>
             </form>
@@ -33,23 +36,5 @@
                 <input type="submit" value="Pick Now"/>
             </form>
         {{ end }}
-        <!-- {{ if .User.Leagues }}
-            <h3>My Leagues</h3>
-            {{ $baseUrl := "/display-league?" }}
-            {{ range .User.Leagues }}
-                <a href="{{ $baseUrl }}{{ .Name }}={{ .Passcode }}" >{{ .Name }}</a><br/>
-            {{ end }}
-        {{ end }}
-        <div>
-            <form action="/league" method="get">
-                <input type="submit" value="Join or Create a League"/>
-            </form>
-        </div>
-    {{ if .User.IsAdmin }}
-        <h4>Go to Admin Page</h4>
-        <form action="/admin/admin-page" method="get">
-            <input type="submit" value="Admin Page"/>
-        </form>
-    {{ end}} -->
     {{ end }}
 {{ end }}
