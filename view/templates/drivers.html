@@ -7,6 +7,10 @@
                     <template x-for="driver in data.selectedDrivers">
                         <li> 
                             <span x-text="driver.name"></span>
+                            <span x-text="driver.surname"></span>
+                            <span>(</span>
+                            <span x-text="driver.constructor.constructorName"></span>
+                            <span>)</span>
                             <span>$</span>
                             <span x-text="driver.price.toLocaleString('en-US')"></span>
                             <button type="button" x-on:click="addDriver(driver, data.allDrivers);removeDriver(driver, data.selectedDrivers)">Remove</button>
@@ -30,6 +34,10 @@
                         <template x-for="driver in data.allDrivers">
                             <li>
                                 <span x-text="driver.name"></span>
+                                <span x-text="driver.surname"></span>
+                                <span>(</span>
+                                <span x-text="driver.constructor.constructorName"></span>
+                                <span>)</span>
                                 <span>$</span>
                                 <span x-text="driver.price.toLocaleString('en-US')"></span>
                                 <button type="button" x-on:click="addDriver(driver, data.selectedDrivers);removeDriver(driver, data.allDrivers)">Select</button>

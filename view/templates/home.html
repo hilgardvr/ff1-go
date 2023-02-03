@@ -22,7 +22,7 @@
         {{ if .User.Team }}
             <h3>My team for next race:</h3>
             {{range .User.Team}}
-                <li>{{.Name}} {{.Surname}}</li>
+                <li>{{.Name}} {{.Surname}} ({{.Constructor.ConstructorName}}) - ${{.Price}}</li>
             {{ end }}
             <form action="/repick-team" method="put">
                 <input type="submit" value="Change team"/>
