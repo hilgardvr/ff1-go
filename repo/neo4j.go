@@ -3,6 +3,7 @@ package repo
 import (
 	"errors"
 	"hilgardvr/ff1-go/config"
+	"hilgardvr/ff1-go/constructor"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
 	"hilgardvr/ff1-go/races"
@@ -109,7 +110,8 @@ func (n Neo4jRepo)GetDriversBySeason(season int) ([]drivers.Driver,  error) {
 	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (d:Driver)-[hr:HAS_RACE]->(r:Race {season: $season}) 
-			return ID(d) as id, d.name as name, d.surname as surname, sum(hr.points) as points
+			match (d)-[rf:RACES_FOR]->(c:Constructor)
+			return ID(d) as id, d.name as name, d.surname as surname, sum(hr.points) as points, ID(c) as constructorId, c.name as constructorName
 		`,
 		map[string]interface{}{
 			"season": season,
@@ -140,11 +142,25 @@ func (n Neo4jRepo)GetDriversBySeason(season int) ([]drivers.Driver,  error) {
 				log.Println("Could not find driver points")
 				continue
 			}
+			constructorId, found := record.Get("constructorId")
+			if !found {
+				log.Println("Could not find constructor id")
+				continue
+			}
+			constructorName, found := record.Get("constructorName")
+			if !found {
+				log.Println("Could not find constructor name")
+				continue
+			}
 			driver := drivers.Driver{
 				Id: id.(int64),
 				Name: name.(string),
 				Surname: surname.(string),
 				Points: points.(int64),
+				Constructor: constructor.Constructor{
+					Id: constructorId.(int64),
+					ConstructorName: constructorName.(string),
+				},
 			}
 			ls = append(ls, driver)
 		}
@@ -404,7 +420,7 @@ func (n Neo4jRepo) GetUserTeamForRace(user users.User, race races.Race) ([]drive
 	}()
 	allDrivers, err := n.GetDriversBySeason(int(race.Season))
 	if err != nil {
-		log.Println("COuld not get all drivers by season:", err)
+		log.Println("C0uld not get all drivers by season:", err)
 		return []drivers.Driver{}, err
 	}
 	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {

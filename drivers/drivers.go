@@ -1,6 +1,9 @@
 package drivers
 
-import "math"
+import (
+	"math"
+	"hilgardvr/ff1-go/constructor"
+)
 
 type Driver struct {
 	Id     int64     	`json:"id"`
@@ -8,6 +11,7 @@ type Driver struct {
 	Surname string  	`json:"surname"`
 	Points int64     	`json:"points"`
 	Price  int64 		`json:"price"`
+	Constructor constructor.Constructor `json:"constructor"`
 }
 
 const budget float64 = 1000000.0
@@ -26,6 +30,7 @@ func AssignPrices(drivers []Driver) []Driver {
 			Surname: driver.Surname,
 			Points: driver.Points,
 			Price:  price,
+			Constructor: driver.Constructor,
 		})
 	}
 	return createdDrivers

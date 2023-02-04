@@ -49,14 +49,20 @@ func HomeTemplate(w http.ResponseWriter, user users.User, latestRacePoints races
 	if err != nil {
 		return err
 	}
+	var teamPrice int64
+	for _, v := range user.Team {
+		teamPrice += v.Price
+	}
 	tmpData := struct {
 		Email string
 		User users.User
 		RacePoints races.RacePoints
+		TeamPrice int64
 	} {
 		Email: user.Email,
 		User: user,
 		RacePoints: latestRacePoints,
+		TeamPrice: teamPrice,
 	}
 	err = t.ExecuteTemplate(w, "base", tmpData) 
 	return err

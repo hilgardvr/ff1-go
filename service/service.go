@@ -16,7 +16,6 @@ var svc ServiceIO
 type ServiceIO struct {
 	Db repo.Repo
 	EmailService email.EmailService
-	//todo make toggles
 	SendEmail bool
 }
 
