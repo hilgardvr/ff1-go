@@ -6,6 +6,7 @@ import (
 	"hilgardvr/ff1-go/constructor"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/leagues"
+	"hilgardvr/ff1-go/pricing"
 	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/users"
 	"io/ioutil"
@@ -171,7 +172,12 @@ func (n Neo4jRepo)GetDriversBySeason(season int) ([]drivers.Driver,  error) {
 		return []drivers.Driver{}, err
 	}
 	ds := result.([]drivers.Driver)
-	ds = drivers.AssignPrices(ds)
+	currentRaces, err := n.GetAllCompletedRaces()
+	if err != nil {
+		log.Println("Error fetching completed races")
+		return ds, err
+	}
+	ds = pricing.AssignPrices(ds, currentRaces)
 	return ds, err
 }
 
