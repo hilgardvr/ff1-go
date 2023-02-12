@@ -4,12 +4,12 @@ import (
 	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/email"
+	"hilgardvr/ff1-go/pricing"
 	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/repo"
 	"hilgardvr/ff1-go/users"
 	"log"
 	"sort"
-	// "math"
 )
 
 var svc ServiceIO
@@ -29,6 +29,28 @@ func GetServiceIO() *ServiceIO {
 	return &svc
 }
 
+func AssingDriverPrices() error {
+	d, err := GetAllDriverForCurrentSeason()
+	if err != nil {
+		log.Println("could not get drivers for current season", err)
+		return err
+	}
+	completedRaces, err := GetAllCompletedRaces()
+	if err != nil {
+		log.Println("could not get completed races", err)
+		return err
+	}
+	pricedDrivers := pricing.AssignPrices(d, completedRaces)
+	for _, v := range pricedDrivers {
+		err = svc.Db.SetDriverPrice(v)
+		if err != nil {
+			log.Println("could not set driver price", err)
+			return err
+		}
+	}
+	return  nil
+}
+
 func Init(config *config.Config) error {
 	r := &repo.Neo4jRepo{}
 	err := r.Init(config)
@@ -38,6 +60,7 @@ func Init(config *config.Config) error {
 	e := &email.GmailEmailService{}
 	err = e.Init(config)
 	if err != nil {
+		log.Println("Error Init:", err)
 		return err
 	}
 	svc = ServiceIO{
@@ -45,12 +68,17 @@ func Init(config *config.Config) error {
 		EmailService: e,
 		SendEmail: config.SendEmails,
 	}
+	err = AssingDriverPrices()
+	if err != nil {
+		log.Println("Error assigning prices:", err)
+		return err
+	}
 	return nil
 }
 
 
 func UpsertTeam(user users.User, ds []drivers.Driver) error {
-	valid := drivers.ValidateTeam(ds)
+	valid := drivers.ValidateTeam(ds, user.Budget)
 	if valid {
 		latesstRace, err := GetLatestRace()
 		if err != nil {
@@ -86,6 +114,15 @@ func GetUserTeam(user users.User) (users.User, error) {
 			Team: team,
 		}
 	return user, nil
+}
+
+func GetAllDriverForCurrentSeason() ([]drivers.Driver, error) {
+	latestRace, err := GetLatestRace()
+	if err != nil {
+		log.Println("Could not get latest race", err)
+		return []drivers.Driver{}, err
+	}
+	return GetAllDriversForSeason(int(latestRace.Season))
 }
 
 func GetAllDriversForSeason(season int) ([]drivers.Driver, error) {

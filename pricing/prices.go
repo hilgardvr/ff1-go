@@ -15,15 +15,10 @@ const adjustmentFactor float64 = 1.5
 
 
 func AssignPrices(ds []drivers.Driver, currentRaces []races.Race) []drivers.Driver {
-	// currentRaces, err := service.GetAllRacesForCurrentSeason()
-	// if err != nil {
-	// 	log.Println("Error fetching all races for current season:", err)
-	// 	return drivers, err
-	// }
 	var createdDrivers []drivers.Driver
 	totalPoints := sumAllDriverPoints(ds)
 	for _, driver := range ds {
-		price := calcPrice(driver, totalPoints, len(currentRaces))
+		price := calcPrice(driver, totalPoints, currentRaces)
 		createdDrivers = append(createdDrivers, drivers.Driver{
 			Id:     driver.Id,
 			Name:   driver.Name,
@@ -44,14 +39,12 @@ func sumAllDriverPoints(drivers []drivers.Driver) int64 {
 	return totalPoints
 }
 
-func calcPrice(driver drivers.Driver, totalPoints int64, numberOfRaces int) int64 {
+func calcPrice(driver drivers.Driver, totalPoints int64, races []races.Race) int64 {
 	if totalPoints == 0 {
 		totalPoints++
 	}
-	// driverPointsShare := float64(driver.Points) / float64(totalPoints)
-	// price := (driverPointsShare*budget + basePrice) * adjustmentFactor
-	driverPointsShare := float64(driver.Points) / float64(totalPoints) * 3 //allow for 33 ave points per race 101/3
-	price := budget * driverPointsShare
+	driverPointsShare := float64(driver.Points) / float64(totalPoints)
+	price := budget * driverPointsShare * 3 + budget * 0.05
 	price = math.Round(price)
 	return int64(price)
 }

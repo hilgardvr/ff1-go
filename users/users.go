@@ -15,4 +15,5 @@ type User struct {
 	IsAdmin bool
 	SeasonPoints int
 	RacePoints []races.RacePoints
+	Budget int64
 }
