@@ -102,6 +102,7 @@ func (n *Neo4jRepo)Init(config *config.Config) error {
 	n.driver = driver
 	return err
 }
+
 func (n Neo4jRepo)GetDriversBySeason(season int) ([]drivers.Driver,  error) {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
@@ -156,6 +157,9 @@ func (n Neo4jRepo)GetDriversBySeason(season int) ([]drivers.Driver,  error) {
 			if !found {
 				log.Println("Could not find driver price")
 				continue
+			}
+			if price == nil {
+				price = int64(1000000)
 			}
 			driver := drivers.Driver{
 				Id: id.(int64),
