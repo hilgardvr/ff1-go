@@ -3,6 +3,7 @@
         <form x-data="driverSelectionForm({{ .TemplData }})" @submit.prevent="submitForm()" action="/save-team">
                 <div>
                     <h4>Budget Left: $<span x-text="totalCost.toLocaleString('en-US')"></span></h4>
+                    <!-- <h4>Changes Left: <span x-text="data.picks"></span></h4> -->
                     <h4>Selected Drivers</h4>
                     <template x-for="driver in data.selectedDrivers">
                         <li> 
@@ -13,7 +14,7 @@
                             <span>)</span>
                             <span>$</span>
                             <span x-text="driver.price.toLocaleString('en-US')"></span>
-                            <button type="button" x-on:click="addDriver(driver, data.allDrivers);removeDriver(driver, data.selectedDrivers)">Remove</button>
+                            <button type="button" x-on:click="removeDriver(driver, data.selectedDrivers)">Remove</button>
                         </li>
                     </template>
                 </div>
@@ -56,7 +57,8 @@
                         data: {
                             allDrivers: data.AllDrivers,
                             selectedDrivers: data.Team,
-                            budget: data.Budget
+                            budget: data.Budget,
+                            // picks: data.Picks,
                         },
                         get totalCost() { 
                             return (this.data.budget - this.data.selectedDrivers.reduce((acc, i) => acc + i.price, 0))
@@ -67,6 +69,7 @@
                             return drivers.sort((a,b) => a.price < b.price)
                         },
                         addDriver(driver, list) {
+                            // this.data.picks -= 1
                             list.push(driver)
                             this.sortByPrice(list)
                         },

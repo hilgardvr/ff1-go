@@ -199,6 +199,12 @@ func (n Neo4jRepo) SetLoginCode(email string, generatedCode string) (string, err
 				else u.budget
 			end as b
 			set u.budget = b
+			with u,
+			case
+				when u.picks is null then 2
+				else u.picks
+			end as p
+			set u.picks = p
 			return u { .* } as user
 		`,
 		map[string]interface{}{
@@ -352,6 +358,11 @@ func (n Neo4jRepo) GetSession(uuid string) (users.User, bool) {
 		log.Println("No budget found for user: ", email)
 		budget = 0
 	}
+	picks, found := res["picks"] 
+	if !found {
+		picks = int64(0)
+		log.Println("picks not found for user:", email)
+	}
 	n.DeleteLoginCode(email.(string))
 	return users.User{
 		Email: email.(string), 
@@ -359,6 +370,7 @@ func (n Neo4jRepo) GetSession(uuid string) (users.User, bool) {
 		TeamName: teamName.(string),
 		TeamPriciple: teamPriciple.(string),
 		Budget: budget.(int64),
+		Picks: picks.(int64),
 	}, true
 }
 

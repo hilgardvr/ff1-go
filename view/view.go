@@ -108,7 +108,7 @@ func RacePointsTemplate(w http.ResponseWriter, user users.User, seasonRaces []ra
 }
 
 func LeagueTemplate(w http.ResponseWriter, user users.User) error {
-	fmt.Println(driversPath)
+	fmt.Println(league)
 	t, err := template.ParseFiles(base, league)
 	if err != nil {
 		return err
@@ -150,10 +150,14 @@ func DriversTemplate(w http.ResponseWriter, user users.User, allDrivers []driver
 		Team []drivers.Driver
 		Budget int64
 		AllDrivers []drivers.Driver
+		Picks int64
+		UserDrivers []drivers.Driver
 	} {
 		Team: userTeam,
-		Budget: 1000000,
+		Budget: user.Budget,
 		AllDrivers: filteredDrivers,
+		Picks: user.Picks,
+		UserDrivers: user.Team,
 	}
 	json, err := json.Marshal(data)
 	if err != nil {

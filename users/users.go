@@ -16,4 +16,5 @@ type User struct {
 	SeasonPoints int
 	RacePoints []races.RacePoints
 	Budget int64
+	Picks int64
 }
