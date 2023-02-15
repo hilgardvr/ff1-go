@@ -74,6 +74,7 @@ func UpdateRaceData(w http.ResponseWriter, r *http.Request) {
 			log.Println("Failed to save driver points:", err)
 			return
 		}
+		service.AssingDriverPrices()
 		http.Redirect(w, r, "/", 300)
 	} else {
 		log.Println("User not an admin:", user.Email)

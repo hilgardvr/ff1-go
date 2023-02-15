@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var expiration = time.Hour
+var expiration = time.Hour * 8760
 var cookieName = "session"
 
 var svc = service.GetServiceIO()
@@ -41,7 +41,7 @@ func GetUserSession(r *http.Request) (users.User, error) {
 
 func SetSessionCookie(email string, w http.ResponseWriter) error {
 	uuid := uuid.New().String()
-	uuidCookie := http.Cookie{Name: cookieName, Value: uuid} //, Expires: time.Now().Add(expiration)
+	uuidCookie := http.Cookie{Name: cookieName, Value: uuid, Expires: time.Now().Add(expiration)}
 	http.SetCookie(w, &uuidCookie)
 	err := svc.Db.SaveSession(email, uuid, expiration)
 	return err
