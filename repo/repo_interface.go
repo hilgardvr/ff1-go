@@ -11,7 +11,6 @@ import (
 
 type Repo interface {
 	Init(*config.Config) error
-	AddUser(users.User) (users.User, error)
 
 	GetDriversBySeason(int) ([]drivers.Driver, error)
 
@@ -37,4 +36,6 @@ type Repo interface {
 	CreateNewRace(drivers []drivers.Driver, race races.Race, track string) error
 
 	GetRacePoints(races.Race) (races.RacePoints, error)
+
+	SetDriverPrice(drivers drivers.Driver) error
 }

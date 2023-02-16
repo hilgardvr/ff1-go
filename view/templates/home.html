@@ -21,7 +21,7 @@
             {{ end }}
         {{ end}}
         {{ if .User.Team }}
-            <h3>My team for next race:</h3>
+            <h3>My team:</h3>
             {{range .User.Team}}
                 <li x-data="{price: {{.Price}} }">{{.Name}} {{.Surname}} ({{.Constructor.ConstructorName}}) - $<span x-text="price.toLocaleString('en-US')"></span></li>
             {{ end }}
