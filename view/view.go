@@ -3,10 +3,12 @@ package view
 import (
 	"encoding/json"
 	"fmt"
+	"hilgardvr/ff1-go/config"
 	"hilgardvr/ff1-go/drivers"
 	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/users"
 	"html/template"
+	"log"
 	"net/http"
 	"sort"
 )
@@ -22,6 +24,7 @@ var displayLeague = basePath + "display-league.html"
 var displayLeagues = basePath + "display-leagues.html"
 var adminPage = basePath + "admin_page.html"
 var racePointsPage = basePath + "race-points.html"
+var updateRaceMode = basePath + "update_race_disabled.html"
 
 func LoginCodeTemplate(w http.ResponseWriter) error {
 	fmt.Println(getLoginCode)
@@ -125,9 +128,30 @@ func LeagueTemplate(w http.ResponseWriter, user users.User) error {
 }
 
 func DriversTemplate(w http.ResponseWriter, user users.User, allDrivers []drivers.Driver) error {
+	if (config.AppConfig.UpdateMode) {
+		t, err := template.ParseFiles(base, updateRaceMode)
+		if err != nil {
+			log.Println("Error parsing file:", err)
+			return err
+		}
+		tmplData := struct {
+			Email string
+			User users.User
+		} {
+			Email: user.Email,
+			User: user,
+		}
+		err = t.ExecuteTemplate(w, "base", tmplData)
+		if err != nil {
+			log.Println("Error exicuting:", err)
+			return err
+		}
+		return err
+	}
 	fmt.Println(driversPath)
 	t, err := template.ParseFiles(base, driversPath)
 	if err != nil {
+		log.Println("Error parsing file:", driversPath)
 		return err
 	}
 	var filteredDrivers []drivers.Driver
@@ -157,6 +181,7 @@ func DriversTemplate(w http.ResponseWriter, user users.User, allDrivers []driver
 	}
 	json, err := json.Marshal(data)
 	if err != nil {
+		log.Println("Error marshalling data:", err)
 		return err
 	}
 	templData := struct {

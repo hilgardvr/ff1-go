@@ -16,7 +16,10 @@ type Config struct {
     EmailPassword string `json:"APP_PASSWORD"`
     EmailFrom string `json:"EMAIL_FROM"`
 	SendEmails bool `json:"SEND_EMAILS"`
+	UpdateMode bool `json:"UPDATE_MODE"`
 }
+
+var AppConfig Config
 
 func ReadConfig(path string) (*Config, error) {
 	file, err := ioutil.ReadFile(path)
@@ -28,6 +31,7 @@ func ReadConfig(path string) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
+		AppConfig = config
 		return &config, nil
 	}
 }
