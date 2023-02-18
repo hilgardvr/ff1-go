@@ -54,6 +54,13 @@ func readEnvConfig() (*Config, error) {
 				}
 				config.SendEmails = toggle
 			}
+			case "UPDATE_MODE": {
+				toggle, err := strconv.ParseBool(pair[1])
+				if err != nil {
+					return &config, err
+				}
+				config.UpdateMode = toggle
+			}
 		default: 
 		}
 	}
