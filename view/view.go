@@ -128,7 +128,8 @@ func LeagueTemplate(w http.ResponseWriter, user users.User) error {
 }
 
 func DriversTemplate(w http.ResponseWriter, user users.User, allDrivers []drivers.Driver) error {
-	if (config.AppConfig.UpdateMode) {
+	updateMode := config.ServiceConfig().UpdateMode
+	if (updateMode) {
 		t, err := template.ParseFiles(base, updateRaceMode)
 		if err != nil {
 			log.Println("Error parsing file:", err)

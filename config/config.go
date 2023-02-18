@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -19,11 +20,21 @@ type Config struct {
 	UpdateMode bool `json:"UPDATE_MODE"`
 }
 
-var AppConfig Config
+var appConfig Config
+
+func ServiceConfig() Config {
+	return appConfig
+}
 
 func ReadConfig(path string) (*Config, error) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
+		config, err := readEnvConfig()
+		if err != nil {
+			log.Println("Error reading env config", err)
+			return &Config{}, err
+		}
+		appConfig = *config
 		return readEnvConfig()
 	} else {
 		config := Config{}
@@ -31,7 +42,7 @@ func ReadConfig(path string) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		AppConfig = config
+		appConfig = config
 		return &config, nil
 	}
 }
