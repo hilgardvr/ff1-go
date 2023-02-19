@@ -9,6 +9,7 @@ import (
 	"hilgardvr/ff1-go/view"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func LoginCodeHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +42,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("code: ", code)
 	emailAddress := r.URL.Query().Get("email")
 	fmt.Println("email: ", emailAddress)
-	valid := service.ValidateLoginCode(emailAddress, code)
+	valid := service.ValidateLoginCode(emailAddress, strings.TrimSpace(code))
 	if valid {
 		fmt.Println("successfull code - removing")
 		err = session.SetSessionCookie(emailAddress, w)

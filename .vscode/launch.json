@@ -17,7 +17,8 @@
                 "NEO4J_PASSWORD": "password123",
                 "APP_PASSWORD": "some_pw",
                 "EMAIL_FROM": "someemail@gmail.com",
-                "UPDATE_MODE": "true"
+                "SEND_EMAILS": "false",
+                "UPDATE_MODE": "false"
             }
         }
     ]

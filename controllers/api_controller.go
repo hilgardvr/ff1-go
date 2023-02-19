@@ -10,6 +10,7 @@ import (
 	"hilgardvr/ff1-go/users"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func GetDrivers(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +86,7 @@ func JoinLeagueController(w http.ResponseWriter, r *http.Request) {
 	if leaguePasscode == "" {
 		log.Println("No league passcode provided")
 	} else {
-		err = service.JoinLeague(user, leaguePasscode)
+		err = service.JoinLeague(user, strings.TrimSpace(leaguePasscode))
 		if err != nil {
 			log.Println("Error joining league:", err)
 		}
