@@ -2,7 +2,6 @@ package pricing
 
 import (
 	"hilgardvr/ff1-go/drivers"
-	"hilgardvr/ff1-go/races"
 	// "hilgardvr/ff1-go/service"
 	// "log"
 	"math"
@@ -14,11 +13,11 @@ const basePrice float64 = budget * 0.1
 const adjustmentFactor float64 = 1.5
 
 
-func AssignPrices(ds []drivers.Driver, currentRaces []races.Race) []drivers.Driver {
+func AssignPrices(ds []drivers.Driver) []drivers.Driver {
 	var createdDrivers []drivers.Driver
 	totalPoints := sumAllDriverPoints(ds)
 	for _, driver := range ds {
-		price := calcPrice(driver, totalPoints, currentRaces)
+		price := calcPrice(driver, totalPoints)
 		createdDrivers = append(createdDrivers, drivers.Driver{
 			Id:     driver.Id,
 			Name:   driver.Name,
@@ -39,7 +38,7 @@ func sumAllDriverPoints(drivers []drivers.Driver) int64 {
 	return totalPoints
 }
 
-func calcPrice(driver drivers.Driver, totalPoints int64, races []races.Race) int64 {
+func calcPrice(driver drivers.Driver, totalPoints int64) int64 {
 	if totalPoints == 0 {
 		totalPoints++
 	}

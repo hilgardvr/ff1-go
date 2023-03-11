@@ -1,4 +1,5 @@
 {{ define "main" }}
+    <h3>Race results for {{.UserDisplayed.TeamName}} ({{ .UserDisplayed.TeamPriciple }})</h3>
     {{ range .RacePoints }}
         {{ if gt .Race.Race 0 }}
             {{ if .Drivers }}

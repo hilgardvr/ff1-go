@@ -307,7 +307,7 @@ func (n Neo4jRepo) GetSession(uuid string) (users.User, bool) {
 	defer func() {
 		session.Close()
 	}()
-	result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 			match (s:Session {uuid: $uuid})
 			where s.expiry > timestamp()
@@ -399,6 +399,59 @@ func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver, r
 		return users.User{}, nil
 	})
 	return err
+}
+
+func (n Neo4jRepo) GetUserDetails(email string) (users.User, error) {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+			match (u:User {email: $email})
+			return u { .* } as user
+		`,
+		map[string]interface{}{
+			"email": email,
+		})
+		record, err := result.Single()
+		if err != nil {
+			return users.User{}, err
+		}
+		user, found := record.Get("user")
+		if !found {
+			return users.User{}, errors.New("Could not find user in result")
+		}
+		return user, nil
+	})
+	if err != nil {
+		return users.User{}, err
+	}
+	res := result.(map[string]interface{})
+	isAdmin, found := res["isadmin"] 
+	if !found {
+		isAdmin = false
+	}
+	teamName, found := res["teamName"] 
+	if !found {
+		teamName = ""
+	}
+	teamPriciple, found := res["teamPrinciple"] 
+	if !found {
+		teamPriciple = ""
+	}
+	budget, found := res["budget"] 
+	if !found {
+		log.Println("No budget found for user: ", email)
+		budget = 0
+	}
+	return users.User{
+		Email: email, 
+		IsAdmin: isAdmin.(bool),
+		TeamName: teamName.(string),
+		TeamPriciple: teamPriciple.(string),
+		Budget: budget.(int64),
+	}, nil
 }
 
 func (n Neo4jRepo) GetUserTeamForRace(user users.User, race races.Race) ([]drivers.Driver, error) {
@@ -686,7 +739,7 @@ func (n Neo4jRepo) GetAllCompletedRaces() ([]races.Race, error) {
 	}()
 	res, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
-			match (:Driver)-[:HAS_RACE]-(r:Race) return r { .* } as race
+			match (:Driver)-[:HAS_RACE]-(r:Race) return distinct r { .* } as race
 		`, map[string]interface{}{})
 		if err != nil {
 			return []races.Race{}, err
