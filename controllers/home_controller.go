@@ -5,6 +5,7 @@ import (
 	"hilgardvr/ff1-go/races"
 	"hilgardvr/ff1-go/service"
 	"hilgardvr/ff1-go/session"
+	"hilgardvr/ff1-go/users"
 	"hilgardvr/ff1-go/view"
 	"log"
 	"net/http"
@@ -75,6 +76,62 @@ func LeagueController(w http.ResponseWriter, r *http.Request) {
 	err = view.LeagueTemplate(w, user)
 	if err != nil {
 		log.Println("League template executing err: ", err)
+	}
+}
+
+func DisplayTeamMemberController(w http.ResponseWriter, r *http.Request) {
+	user, err := session.GetUserSession(r)
+	if err != nil {
+		log.Println("Failed to get user", err)
+		return
+	}
+	err = r.ParseForm()
+	if err != nil {
+		log.Println("Could not parse form")
+		return
+	}
+	query := r.URL.RawQuery
+	qs := strings.Split(query, "=")
+	if len(qs) != 2 {
+		log.Println("Split query incorrect lenth")
+		return
+	}
+	otherUserEmail, err := url.QueryUnescape(qs[1])
+	if err != nil {
+		log.Println("Unescape query failed: ", err)
+		return
+	}
+	if otherUserEmail == "" {
+		log.Println("No league passcode provided")
+	} else {
+		otherUserDetails, err := service.GetUserDetails(otherUserEmail)
+		if err != nil {
+			log.Println("Error fetching other user details: ", err)
+			return
+		}
+		displayRacePoints(w, user, otherUserDetails)
+		// allRaces, err := service.GetAllRacesForCurrentSeason()
+		// if err != nil {
+		// 	log.Println("could not get all races:", err)
+		// 	return
+		// }
+		// var racePoints []races.RacePoints
+		// for _, v := range allRaces {
+		// 	points, err := service.GetUserRacePoints(users.User{Email: otherUserEmail}, v)
+		// 	if err != nil {
+		// 		log.Println("could not get user races points:", err)
+		// 		return
+		// 	}
+		// 	racePoints = append(racePoints, points)
+		// }
+		// if err != nil {
+		// 	log.Println("could not get latest race points:", err)
+		// 	return
+		// }
+		// err = view.RacePointsTemplate(w, user, racePoints, otherUserDetails)
+		// if err != nil {
+		// 	log.Println("template executing err:", err)
+		// }
 	}
 }
 
@@ -155,27 +212,54 @@ func DisplayRacePoints(w http.ResponseWriter, r *http.Request) {
 			log.Println("template executing err:", err)
 		}
 	} else {
-		allRaces, err := service.GetAllRacesForCurrentSeason()
+		displayRacePoints(w, user, user)
+		// allRaces, err := service.GetAllRacesForCurrentSeason()
+		// if err != nil {
+		// 	log.Println("could not get all races:", err)
+		// 	return
+		// }
+		// var racePoints []races.RacePoints
+		// for _, v := range allRaces {
+		// 	points, err := service.GetUserRacePoints(user, v)
+		// 	if err != nil {
+		// 		log.Println("could not get user races points:", err)
+		// 		return
+		// 	}
+		// 	racePoints = append(racePoints, points)
+		// }
+		// if err != nil {
+		// 	log.Println("could not get latest race points:", err)
+		// 	return
+		// }
+		// err = view.RacePointsTemplate(w, user, racePoints, user)
+		// if err != nil {
+		// 	log.Println("template executing err:", err)
+		// }
+	}
+}
+
+func displayRacePoints(w http.ResponseWriter, user users.User, userToDisplay users.User) {
+	// allRaces, err := service.GetAllRacesForCurrentSeason()
+	allRaces, err := service.GetAllCompletedRacesForCurrentSeason()
+	if err != nil {
+		log.Println("could not get all races:", err)
+		return
+	}
+	var racePoints []races.RacePoints
+	for _, v := range allRaces {
+		points, err := service.GetUserRacePoints(userToDisplay, v)
 		if err != nil {
-			log.Println("could not get all races:", err)
+			log.Println("could not get user races points:", err)
 			return
 		}
-		var racePoints []races.RacePoints
-		for _, v := range allRaces {
-			points, err := service.GetUserRacePoints(user, v)
-			if err != nil {
-				log.Println("could not get user races points:", err)
-				return
-			}
-			racePoints = append(racePoints, points)
-		}
-		if err != nil {
-			log.Println("could not get latest race points:", err)
-			return
-		}
-		err = view.RacePointsTemplate(w, user, racePoints)
-		if err != nil {
-			log.Println("template executing err:", err)
-		}
+		racePoints = append(racePoints, points)
+	}
+	if err != nil {
+		log.Println("could not get latest race points:", err)
+		return
+	}
+	err = view.RacePointsTemplate(w, user, racePoints, userToDisplay)
+	if err != nil {
+		log.Println("template executing err:", err)
 	}
 }

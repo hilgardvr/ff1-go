@@ -35,12 +35,7 @@ func AssingDriverPrices() error {
 		log.Println("could not get drivers for current season", err)
 		return err
 	}
-	completedRaces, err := GetAllCompletedRaces()
-	if err != nil {
-		log.Println("could not get completed races", err)
-		return err
-	}
-	pricedDrivers := pricing.AssignPrices(d, completedRaces)
+	pricedDrivers := pricing.AssignPrices(d)
 	for _, v := range pricedDrivers {
 		err = svc.Db.SetDriverPrice(v)
 		if err != nil {
@@ -96,6 +91,14 @@ func UpsertTeam(user users.User, ds []drivers.Driver) error {
 		}
 	}
 	return nil
+}
+
+func GetUserDetails(email string) (users.User, error) {
+	user, err := svc.Db.GetUserDetails(email)
+	if err != nil {
+		log.Println("Error looking up user details", err)
+	}
+	return user, err
 }
 
 func GetUserTeam(user users.User) (users.User, error) {
@@ -206,6 +209,25 @@ func GetAllRacesForCurrentSeason() ([]races.Race, error) {
 		return []races.Race{}, err
 	}
 	return GetAllRacesForSeason(l.Season)
+}
+
+func GetAllCompletedRacesForCurrentSeason() ([]races.Race, error) {
+	latestRace, err := GetLatestRace()
+	if err != nil {
+		return []races.Race{}, err
+	}
+	allCompleted, err := GetAllCompletedRaces()
+	if err != nil {
+		return []races.Race{}, err
+	}
+	completedCurrentSeason := []races.Race{}
+	for _, v := range allCompleted {
+		if v.Season == latestRace.Season {
+			completedCurrentSeason = append(completedCurrentSeason, v)
+		}
+	}
+	return completedCurrentSeason, nil
+	
 }
 
 func GetAllRacesForSeason(season int64) ([]races.Race, error) {

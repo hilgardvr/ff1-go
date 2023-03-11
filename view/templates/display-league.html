@@ -4,7 +4,8 @@
         <ol>
             {{ range .Users }}
                 {{ if and .TeamName .TeamPriciple }}
-                    <li>{{ .TeamName }}({{ .TeamPriciple }}) <span>{{ .SeasonPoints }}</span> </li>
+                    {{ $baseUrl := "/display-member-team?" }}
+                    <li><a href="{{ $baseUrl }}email={{ .Email }}">{{ .TeamName }}</button>({{ .TeamPriciple }}) <span>{{ .SeasonPoints }}</span> </li>
                 {{ else }}
                     <li>{{ .Email }} <span>{{ .SeasonPoints }}</span> </li>
                 {{ end }}

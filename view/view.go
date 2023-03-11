@@ -91,7 +91,12 @@ func DisplayLeagues(w http.ResponseWriter, user users.User, latestRacePoints rac
 }
 
 
-func RacePointsTemplate(w http.ResponseWriter, user users.User, seasonRaces []races.RacePoints) error {
+func RacePointsTemplate(
+	w http.ResponseWriter, 
+	user users.User, 
+	seasonRaces []races.RacePoints,
+	userToDisplay users.User,
+) error {
 	fmt.Println(home)
 	t, err := template.ParseFiles(base, racePointsPage)
 	if err != nil {
@@ -101,10 +106,12 @@ func RacePointsTemplate(w http.ResponseWriter, user users.User, seasonRaces []ra
 		Email string
 		User users.User
 		RacePoints []races.RacePoints
+		UserDisplayed users.User
 	} {
 		Email: user.Email,
 		User: user,
 		RacePoints: seasonRaces,
+		UserDisplayed: userToDisplay,
 	}
 	err = t.ExecuteTemplate(w, "base", tmpData) 
 	return err
@@ -233,7 +240,7 @@ func DisplayLeagueTemplate(w http.ResponseWriter, u users.User, leagueName strin
 	sort.Slice(us, func(i int, j int) bool {
 		return us[i].SeasonPoints > us[j].SeasonPoints
 	})
-	tempalteData := struct {
+	templateData := struct {
 		Email string
 		User users.User
 		Users []users.User
@@ -244,6 +251,6 @@ func DisplayLeagueTemplate(w http.ResponseWriter, u users.User, leagueName strin
 		Users: us,
 		LeagueName: leagueName,
 	}
-	err = t.ExecuteTemplate(w, "base", tempalteData)
+	err = t.ExecuteTemplate(w, "base", templateData)
 	return err
 }
