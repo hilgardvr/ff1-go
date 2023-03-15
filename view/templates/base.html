@@ -1,32 +1,34 @@
 {{ define "base" }}
+<!doctype html>
 <html lang="en">
     <head>
         <title>FF1 Manager</title>
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css"> 
+        <!-- <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">  -->
+        <!-- <link href="./dist/output.css" rel="stylesheet"> -->
+        <script src="https://cdn.tailwindcss.com"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     </head>
     <body>
-        <header>
-            <h4>Fantasy F1 Manager</h4>
-            <div>
-            {{ if .Email }}
-                <h6>You are logged in as {{.Email}}</h6>
-            {{ end }}
-            <nav>
-                <a href="/"><button>Home</button></a>
-                <a href="/display-points"><button>Points</button></a>
-                <a href="/display-leagues"><button>Leagues</button></a>
-                <a href="/pick-team"><button>Pick Team</button></a>
-                {{ if .User.IsAdmin }}
-                    <a href="/admin/admin-page"><button>Admin</button></a>
+        <header class="bg-slate-900 ">
+            <h4 class="text-white text-xl flex justify-center">Fantasy F1 Manager</h4>
+            <div class="text-slate-400 ">
+                {{ if .Email }}
+                    <h6 class="flex justify-center">You are logged in as {{.Email}}</h6>
                 {{ end }}
-                <a href="/logout"><button>Logout</button></a>
-            </nav>
-
+                <nav class="container flex flex-wrap items-center justify-between mx-auto py-1 px-3 text-black">
+                    <a href="/"><button class="bg-slate-500 w-32 rounded hover:bg-slate-600 hover:text-white active:bg-slate-700">Home</button></a>
+                    <a href="/display-points"><button class="bg-slate-500 w-32 rounded hover:bg-slate-600 hover:text-white active:bg-slate-700">Points</button></a>
+                    <a href="/display-leagues"><button class="bg-slate-500 w-32 rounded hover:bg-slate-600 hover:text-white active:bg-slate-700">Leagues</button></a>
+                    <a href="/pick-team"><button class="bg-slate-500 w-32 rounded hover:bg-slate-600 hover:text-white active:bg-slate-700">Pick Team</button></a>
+                    {{ if .User.IsAdmin }}
+                        <a href="/admin/admin-page"><button class="bg-slate-500 w-32 rounded hover:bg-slate-600 hover:text-white active:bg-slate-700">Admin</button></a>
+                    {{ end }}
+                    <a href="/logout"><button class="bg-slate-500 w-32 rounded hover:bg-slate-600 hover:text-white active:bg-slate-700">Logout</button></a>
+                </nav>
             </div>
         </header>
-        <body>
+        <body class="bg-slate-400">
             {{ template "main" . }}
         </body>
     </body>
