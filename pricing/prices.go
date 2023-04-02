@@ -2,8 +2,6 @@ package pricing
 
 import (
 	"hilgardvr/ff1-go/drivers"
-	// "hilgardvr/ff1-go/service"
-	// "log"
 	"math"
 )
 

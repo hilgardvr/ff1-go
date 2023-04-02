@@ -1,6 +1,6 @@
 {{ define "main" }}
     <body>
-        <form x-data="driverSelectionForm({{ .TemplData }})" @submit.prevent="submitForm()" action="/save-team">
+        <form x-data="driverSelectionForm({{ .TemplData }})" @submit.prevent="submitForm()">
                 <div>
                     <h4>Budget Left: $<span x-text="totalCost.toLocaleString('en-US')"></span></h4>
                     <h4>Selected Drivers</h4>
@@ -59,7 +59,7 @@
                             budget: data.Budget
                         },
                         get totalCost() { 
-                            return (this.data.budget - this.data.selectedDrivers.reduce((acc, i) => acc + i.price, 0))
+                            return (this.data.budget) //- this.data.selectedDrivers.reduce((acc, i) => acc + i.price, 0))
                         },
                         get selected() { return this.data.selectedDrivers.sort((a,b) => a.price < b.price) },
                         get available() { return this.data.allDrivers.sort((a,b) => a.price < b.price) },
@@ -67,10 +67,16 @@
                             return drivers.sort((a,b) => a.price < b.price)
                         },
                         addDriver(driver, list) {
+                            if (list == this.data.selectedDrivers) {
+                                this.data.budget -= driver.price
+                            }
                             list.push(driver)
                             this.sortByPrice(list)
                         },
                         removeDriver(driver, list) {
+                            if (list == this.data.selectedDrivers) {
+                                this.data.budget += driver.price
+                            }
                             const index = list.indexOf(driver)
                             if (index > -1) {
                                 list.splice(index, 1)

@@ -13,20 +13,19 @@ import (
 )
 
 var svc ServiceIO
-const budget float64 = 1000000.0
-const driversInTeam int = 4
-const basePrice float64 = budget * 0.1
-const adjustmentFactor float64 = 1.5
-
 
 type ServiceIO struct {
-	Db repo.Repo
+	Db           repo.Repo
 	EmailService email.EmailService
-	SendEmail bool
+	SendEmail    bool
 }
 
 func GetServiceIO() *ServiceIO {
 	return &svc
+}
+
+func AddUsersRaceBudget(additionalAmount int) error {
+	return svc.Db.AddUsersRaceBudget(additionalAmount)
 }
 
 func AssingDriverPrices() error {
@@ -43,7 +42,7 @@ func AssingDriverPrices() error {
 			return err
 		}
 	}
-	return  nil
+	return nil
 }
 
 func Init(config *config.Config) error {
@@ -59,9 +58,9 @@ func Init(config *config.Config) error {
 		return err
 	}
 	svc = ServiceIO{
-		Db: r,
+		Db:           r,
 		EmailService: e,
-		SendEmail: config.SendEmails,
+		SendEmail:    config.SendEmails,
 	}
 	err = AssingDriverPrices()
 	if err != nil {
@@ -71,26 +70,32 @@ func Init(config *config.Config) error {
 	return nil
 }
 
-
 func UpsertTeam(user users.User, ds []drivers.Driver) error {
-	valid := drivers.ValidateTeam(ds, user.Budget)
-	if valid {
-		latesstRace, err := GetLatestRace()
-		if err != nil {
-			return nil
-		}
-		err = svc.Db.DeleteTeam(user, latesstRace)
-		if err != nil {
-			log.Println("Failed to delete team for user: ", user, err)
-			return err
-		}
-		err = svc.Db.SaveTeam(user, ds, latesstRace)
-		if err != nil {
-			log.Println("Failed to save team for user: ", user, err)
-			return err
-		}
+	updatedBudget, err := users.UpdateUserBudgetWithSelections(ds, user)
+	if err != nil {
+		log.Println("Error getting updated budget: ", err)
+		return err
 	}
-	return nil
+	user.Budget = updatedBudget
+	latesstRace, err := GetLatestRace()
+	if err != nil {
+		return nil
+	}
+	err = svc.Db.UpdateTeam(user, ds, latesstRace)
+	if err != nil {
+		log.Println("Failed to update team for user: ", user, err)
+	}
+	return err
+	// err = svc.Db.DeleteTeam(user, latesstRace)
+	// if err != nil {
+	// 	log.Println("Failed to delete team for user: ", user, err)
+	// 	return err
+	// }
+	// err = svc.Db.SaveTeam(user, ds, latesstRace)
+	// if err != nil {
+	// 	log.Println("Failed to save team for user: ", user, err)
+	// 	return err
+	// }
 }
 
 func GetUserDetails(email string) (users.User, error) {
@@ -113,9 +118,9 @@ func GetUserTeam(user users.User) (users.User, error) {
 		return users.User{}, err
 	}
 	user = users.User{
-			Email: user.Email,
-			Team: team,
-		}
+		Email: user.Email,
+		Team:  team,
+	}
 	return user, nil
 }
 
@@ -227,7 +232,7 @@ func GetAllCompletedRacesForCurrentSeason() ([]races.Race, error) {
 		}
 	}
 	return completedCurrentSeason, nil
-	
+
 }
 
 func GetAllRacesForSeason(season int64) ([]races.Race, error) {
@@ -317,40 +322,3 @@ func GetUserRacePoints(user users.User, race races.Race) (races.RacePoints, erro
 	}
 	return races.RacePoints{Race: race, Drivers: teamWithPoints, Total: total}, err
 }
-
-// func AssignPrices(drivers []drivers.Driver, currentRaces []races.Race) []drivers.Driver {
-// 	var createdDrivers []drivers.Driver
-// 	totalPoints := sumAllDriverPoints(drivers)
-// 	for _, driver := range drivers {
-// 		price := calcPrice(driver, totalPoints, len(currentRaces))
-// 		createdDrivers = append(createdDrivers, drivers.Driver{
-// 			Id:     driver.Id,
-// 			Name:   driver.Name,
-// 			Surname: driver.Surname,
-// 			Points: driver.Points,
-// 			Price:  price,
-// 			Constructor: driver.Constructor,
-// 		})
-// 	}
-// 	return createdDrivers
-// }
-
-// func sumAllDriverPoints(drivers []drivers.Driver) int64 {
-// 	var totalPoints int64
-// 	for _, driver := range drivers {
-// 		totalPoints += driver.Points
-// 	}
-// 	return totalPoints
-// }
-
-// func calcPrice(driver drivers.Driver, totalPoints int64, numberOfRaces int) int64 {
-// 	if totalPoints == 0 {
-// 		totalPoints++
-// 	}
-// 	// driverPointsShare := float64(driver.Points) / float64(totalPoints)
-// 	// price := (driverPointsShare*budget + basePrice) * adjustmentFactor
-// 	driverPointsShare := float64(driver.Points) / float64(totalPoints)
-// 	price := budget * driverPointsShare
-// 	price = math.Round(price)
-// 	return int64(price)
-// }

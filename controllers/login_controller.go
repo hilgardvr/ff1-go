@@ -21,9 +21,10 @@ func LoginCodeHandler(w http.ResponseWriter, r *http.Request) {
 	generatedCode := helpers.GenerateLoginCode()
 	newCode, err := service.SetLoginCode(emailAddress, generatedCode)
 	if err != nil {
-		log.Println("Could not set login code")
+		log.Println("Could not set login code: ", err)
 		service.SendEmail(emailAddress, "F1-Go login code", "Failed to generate a login code - pls try again")
 	} else {
+		log.Println("Login code: ", newCode)
 		service.SendEmail(emailAddress, "Your F1-Go login code", newCode)
 	}
 	user := users.User{Email: emailAddress}

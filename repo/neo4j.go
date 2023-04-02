@@ -362,7 +362,7 @@ func (n Neo4jRepo) GetSession(uuid string) (users.User, bool) {
 	}, true
 }
 
-func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver, race races.Race) error {
+func (n Neo4jRepo) UpdateTeam(user users.User, selectedDrivers []drivers.Driver, race races.Race) error {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
 	defer func() {
 		session.Close()
@@ -373,33 +373,140 @@ func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver, r
 	}
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
+			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)-[hd:HAS_DRIVER]->(:Driver)
+			where (t)-[:FOR_RACE]->(:Race {season: $season, race: $race})
+			detach delete t
+		`,
+		map[string]interface{}{
+			"email": user.Email,
+			"season": race.Season,
+			"race": race.Race,
+		})
+		if err != nil {
+			log.Println("Error deleting updated team team:", err)
+			return nil, err 
+		}
+		_, err = result.Consume()
+		if err != nil {
+			log.Println("Error consuming update team:", err)
+			return nil, err 
+		}
+		result, err = tx.Run(`
 			match (u:User {email: $email})
 			match (r:Race {season: $season, race: $race})
 			match (d:Driver) where ID(d) in $driverIds
 			merge (t:Team {email: $email})-[:FOR_RACE]->(r)
 			merge (u)-[h:HAS_TEAM]->(t)
 			merge (t)-[hd:HAS_DRIVER]->(d)
+			set u.budget = $newBudget
 			return u { .* } as user
-		`,
+		`, 
 		map[string]interface{}{
 			"email": user.Email,
 			"season": race.Season,
 			"race": race.Race,
 			"driverIds": driverIds,
+			"newBudget": user.Budget,
 		})
 		if err != nil {
-			log.Println("Error save team:", err)
-			return users.User{}, errors.New("Error running save team query")
+			log.Println("Error deleting updated team team:", err)
+			return nil, err 
 		}
 		_, err = result.Consume()
 		if err != nil {
-			log.Println("Error creating team", err)
-			return users.User{}, err
+			log.Println("Error consuming update team:", err)
+			return nil, err 
 		}
-		return users.User{}, nil
+		return  nil, err
 	})
 	return err
 }
+
+func (n Neo4jRepo) AddUsersRaceBudget(additionalAmount int) error {
+	session := n.driver.NewSession(neo4j.SessionConfig{})
+	defer func() {
+		session.Close()
+	}()
+	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		_, err := tx.Run(`
+			match (u:User)
+			set u.budget = u.budget + $addAmt
+			return u
+		`,
+		map[string]interface{}{
+			"addAmt": additionalAmount,
+		})
+		return nil, err
+	})
+	if err != nil {
+		log.Println("Error updating user budgets: ", err)
+	}
+	return err
+}
+
+// func (n Neo4jRepo) DeleteTeam(user users.User, race races.Race) error {
+// 	session := n.driver.NewSession(neo4j.SessionConfig{})
+// 	defer func() {
+// 		session.Close()
+// 	}()
+// 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+// 		result, err := tx.Run(`
+// 			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)
+// 			where (t)-[:FOR_RACE]->(:Race {season: $season, race: $race})
+// 			detach delete t
+// 		`,
+// 		map[string]interface{}{
+// 			"email": user.Email,
+// 			"season": race.Season,
+// 			"race": race.Race,
+// 		})
+// 		resultSummary, err := result.Consume()
+// 		if err != nil {
+// 			return []drivers.Driver{}, err
+// 		}
+// 		return resultSummary, err
+// 	})
+// 	return err
+// }
+
+// func (n Neo4jRepo) SaveTeam(user users.User, selectedDrivers []drivers.Driver, race races.Race) error {
+// 	session := n.driver.NewSession(neo4j.SessionConfig{})
+// 	defer func() {
+// 		session.Close()
+// 	}()
+// 	var driverIds []int64
+// 	for _, d := range selectedDrivers {
+// 		driverIds = append(driverIds, d.Id)
+// 	}
+// 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+// 		result, err := tx.Run(`
+// 			match (u:User {email: $email})
+// 			match (r:Race {season: $season, race: $race})
+// 			match (d:Driver) where ID(d) in $driverIds
+// 			merge (t:Team {email: $email})-[:FOR_RACE]->(r)
+// 			merge (u)-[h:HAS_TEAM]->(t)
+// 			merge (t)-[hd:HAS_DRIVER]->(d)
+// 			return u { .* } as user
+// 		`,
+// 		map[string]interface{}{
+// 			"email": user.Email,
+// 			"season": race.Season,
+// 			"race": race.Race,
+// 			"driverIds": driverIds,
+// 		})
+// 		if err != nil {
+// 			log.Println("Error save team:", err)
+// 			return users.User{}, errors.New("Error running save team query")
+// 		}
+// 		_, err = result.Consume()
+// 		if err != nil {
+// 			log.Println("Error creating team", err)
+// 			return users.User{}, err
+// 		}
+// 		return users.User{}, nil
+// 	})
+// 	return err
+// }
 
 func (n Neo4jRepo) GetUserDetails(email string) (users.User, error) {
 	session := n.driver.NewSession(neo4j.SessionConfig{})
@@ -498,31 +605,6 @@ func (n Neo4jRepo) GetUserTeamForRace(user users.User, race races.Race) ([]drive
 	}
 	ds := result.([]drivers.Driver)
 	return ds, err
-}
-
-func (n Neo4jRepo) DeleteTeam(user users.User, race races.Race) error {
-	session := n.driver.NewSession(neo4j.SessionConfig{})
-	defer func() {
-		session.Close()
-	}()
-	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-		result, err := tx.Run(`
-			match (u:User {email: $email})-[:HAS_TEAM]->(t:Team)
-			where (t)-[:FOR_RACE]->(:Race {season: $season, race: $race})
-			detach delete t
-		`,
-		map[string]interface{}{
-			"email": user.Email,
-			"season": race.Season,
-			"race": race.Race,
-		})
-		resultSummary, err := result.Consume()
-		if err != nil {
-			return []drivers.Driver{}, err
-		}
-		return resultSummary, err
-	})
-	return err
 }
 
 func (n Neo4jRepo) SaveLeague(user users.User, leagueName string, passcode string) error {

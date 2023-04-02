@@ -8,14 +8,6 @@ import (
 	"net/http"
 )
 
-const PickTeam = "/pick-team"
-const RepickTeam = "/repick-team"
-const LoginCode = "/logincode"
-const Login = "/login"
-const Logout = "/logout"
-const League = "/league"
-const Home = "/"
-
 func main() {
 	config, err := config.ReadConfig("config.json")
 	if err != nil {
@@ -25,12 +17,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc(LoginCode, controllers.LoginCodeHandler)
-	http.HandleFunc(Login, controllers.LoginHandler)
-	http.HandleFunc(Logout, controllers.LogoutHandler)
-	http.HandleFunc(League, controllers.LeagueController)
-	http.HandleFunc(PickTeam, controllers.PickTeamController)
-	http.HandleFunc(RepickTeam, controllers.PickTeamController)
+	http.HandleFunc("/logincode", controllers.LoginCodeHandler)
+	http.HandleFunc("/login", controllers.LoginHandler)
+	http.HandleFunc("/logout", controllers.LogoutHandler)
+	http.HandleFunc("/league", controllers.LeagueController)
+	http.HandleFunc("/pick-team", controllers.PickTeamController)
+	http.HandleFunc("/repick-team", controllers.PickTeamController)
 	http.HandleFunc("/api/all_drivers", controllers.GetDrivers)
 	http.HandleFunc("/api/save-team", controllers.SaveDriversController)
 	http.HandleFunc("/api/create-league", controllers.CreateLeagueController)
@@ -42,7 +34,7 @@ func main() {
 	http.HandleFunc("/display-points", controllers.DisplayRacePoints)
 	http.HandleFunc("/admin/admin-page", controllers.CreateRacePoints)
 	http.HandleFunc("/admin/update-data", controllers.UpdateRaceData)
-	http.HandleFunc(Home, controllers.HomeContoller)
+	http.HandleFunc("/", controllers.HomeContoller)
 	log.Println("Starting server on port", config.AppPort)
 	log.Fatal(http.ListenAndServe(config.AppPort, nil))
 }

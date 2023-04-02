@@ -19,12 +19,12 @@ func CreateRacePoints(w http.ResponseWriter, r *http.Request) {
 	if user.IsAdmin {
 		latestRace, err := service.GetLatestRace()
 		if err != nil {
-			log.Println("error fetching latest race:", err)
+			log.Println("Error fetching latest race:", err)
 			return
 		}
 		drivers, err := service.GetAllDriversForSeason(int(latestRace.Season))
 		if err != nil {
-			log.Println("error fetching drivers:", err)
+			log.Println("Error fetching drivers:", err)
 			return
 		}
 		race, err := service.GetLatestRace()
@@ -75,6 +75,7 @@ func UpdateRaceData(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		service.AssingDriverPrices()
+		// service.AddUsersRaceBudget(1000000)
 		http.Redirect(w, r, "/", 300)
 	} else {
 		log.Println("User not an admin:", user.Email)
