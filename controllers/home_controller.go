@@ -110,28 +110,6 @@ func DisplayTeamMemberController(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		displayRacePoints(w, user, otherUserDetails)
-		// allRaces, err := service.GetAllRacesForCurrentSeason()
-		// if err != nil {
-		// 	log.Println("could not get all races:", err)
-		// 	return
-		// }
-		// var racePoints []races.RacePoints
-		// for _, v := range allRaces {
-		// 	points, err := service.GetUserRacePoints(users.User{Email: otherUserEmail}, v)
-		// 	if err != nil {
-		// 		log.Println("could not get user races points:", err)
-		// 		return
-		// 	}
-		// 	racePoints = append(racePoints, points)
-		// }
-		// if err != nil {
-		// 	log.Println("could not get latest race points:", err)
-		// 	return
-		// }
-		// err = view.RacePointsTemplate(w, user, racePoints, otherUserDetails)
-		// if err != nil {
-		// 	log.Println("template executing err:", err)
-		// }
 	}
 }
 
@@ -213,33 +191,10 @@ func DisplayRacePoints(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		displayRacePoints(w, user, user)
-		// allRaces, err := service.GetAllRacesForCurrentSeason()
-		// if err != nil {
-		// 	log.Println("could not get all races:", err)
-		// 	return
-		// }
-		// var racePoints []races.RacePoints
-		// for _, v := range allRaces {
-		// 	points, err := service.GetUserRacePoints(user, v)
-		// 	if err != nil {
-		// 		log.Println("could not get user races points:", err)
-		// 		return
-		// 	}
-		// 	racePoints = append(racePoints, points)
-		// }
-		// if err != nil {
-		// 	log.Println("could not get latest race points:", err)
-		// 	return
-		// }
-		// err = view.RacePointsTemplate(w, user, racePoints, user)
-		// if err != nil {
-		// 	log.Println("template executing err:", err)
-		// }
 	}
 }
 
 func displayRacePoints(w http.ResponseWriter, user users.User, userToDisplay users.User) {
-	// allRaces, err := service.GetAllRacesForCurrentSeason()
 	allRaces, err := service.GetAllCompletedRacesForCurrentSeason()
 	if err != nil {
 		log.Println("could not get all races:", err)

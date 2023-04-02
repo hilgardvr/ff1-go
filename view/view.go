@@ -14,7 +14,7 @@ import (
 )
 
 var basePath = "./view/templates/"
-var getLoginCode = basePath + "get_login_code.html"
+var landingPage = basePath + "landing-page.html"
 var login = basePath + "login.html"
 var home = basePath + "home.html"
 var driversPath = basePath + "drivers.html"
@@ -22,13 +22,13 @@ var base = basePath + "base.html"
 var league = basePath + "league.html"
 var displayLeague = basePath + "display-league.html"
 var displayLeagues = basePath + "display-leagues.html"
-var adminPage = basePath + "admin_page.html"
+var adminPage = basePath + "admin-page.html"
 var racePointsPage = basePath + "race-points.html"
-var updateRaceMode = basePath + "update_race_disabled.html"
+var disabledSelections = basePath + "disabled-selections.html"
 
 func LoginCodeTemplate(w http.ResponseWriter) error {
-	fmt.Println(getLoginCode)
-	t, err := template.ParseFiles(getLoginCode)
+	fmt.Println(landingPage)
+	t, err := template.ParseFiles(landingPage)
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func LeagueTemplate(w http.ResponseWriter, user users.User) error {
 func DriversTemplate(w http.ResponseWriter, user users.User, allDrivers []drivers.Driver) error {
 	updateMode := config.ServiceConfig().UpdateMode
 	if (updateMode) {
-		t, err := template.ParseFiles(base, updateRaceMode)
+		t, err := template.ParseFiles(base, disabledSelections)
 		if err != nil {
 			log.Println("Error parsing file:", err)
 			return err
@@ -184,7 +184,7 @@ func DriversTemplate(w http.ResponseWriter, user users.User, allDrivers []driver
 		AllDrivers []drivers.Driver
 	} {
 		Team: userTeam,
-		Budget: 1000000,
+		Budget: user.Budget,
 		AllDrivers: filteredDrivers,
 	}
 	json, err := json.Marshal(data)

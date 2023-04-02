@@ -21,9 +21,10 @@ type Repo interface {
 	SaveSession(email, uuid string, duration time.Duration) error
 	GetSession(uuid string) (users.User, bool)
 
-	SaveTeam(users.User, []drivers.Driver, races.Race) error
+	// SaveTeam(users.User, []drivers.Driver, races.Race) error
+	UpdateTeam(users.User, []drivers.Driver, races.Race) error
 	GetUserTeamForRace(user users.User, race races.Race) ([]drivers.Driver, error)
-	DeleteTeam(users.User, races.Race) error
+	// DeleteTeam(users.User, races.Race) error
 	SaveUserTeamDetails(users.User) error
 	GetUserDetails(email string) (users.User, error)
 
@@ -39,4 +40,6 @@ type Repo interface {
 	GetRacePoints(races.Race) (races.RacePoints, error)
 
 	SetDriverPrice(drivers drivers.Driver) error
+
+	AddUsersRaceBudget(additionalAmount int) error
 }
