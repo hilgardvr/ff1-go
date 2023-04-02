@@ -75,7 +75,7 @@ func UpdateRaceData(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		service.AssingDriverPrices()
-		// service.AddUsersRaceBudget(1000000)
+		service.AddUsersRaceBudget(1000000)
 		http.Redirect(w, r, "/", 300)
 	} else {
 		log.Println("User not an admin:", user.Email)
