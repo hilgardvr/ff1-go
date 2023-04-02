@@ -232,7 +232,6 @@ func GetAllCompletedRacesForCurrentSeason() ([]races.Race, error) {
 		}
 	}
 	return completedCurrentSeason, nil
-
 }
 
 func GetAllRacesForSeason(season int64) ([]races.Race, error) {
